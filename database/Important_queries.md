@@ -1,6 +1,16 @@
 # Important Queries 
 https://blog.scottlogic.com/2020/05/01/rendering-one-million-points-with-d3.html
+
 https://github.com/d3fc/d3fc/tree/master/examples/series-canvas-heatmap/
+
+https://blog.scottlogic.com/2016/03/18/d3fc-love-canvas.html
+
+https://bocoup.com/blog/d3js-and-canvas
+
+https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API
+
+https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
+
 ## Data Description
 Data Queries: Queries used for grabbing data on statistics
 

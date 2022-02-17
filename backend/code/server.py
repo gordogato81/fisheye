@@ -26,10 +26,6 @@ def getQuadValues():
     select cell_ll_lat as lat, cell_ll_lon as lon, sum(fishing_hours) as tfh
     from "2020"
     where
-    cell_ll_lat between 20 and 30
-	and 
-	cell_ll_lon between 110 and 120
-	and 
     fdate between %s AND %s
     AND fishing_hours > 0
     group by cell_ll_lat, cell_ll_lon
