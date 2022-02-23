@@ -1,12 +1,12 @@
 version: '3'
 services: 
 
-  database:
-    build: ./database
-    volumes:
-      - database-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+  # database:
+  #   build: ./database
+  #   volumes:
+  #     - database-data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
 
   backend:
     build: ./backend

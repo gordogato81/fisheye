@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import * as L from 'leaflet';
-import { fSpat, fTemp, tmp } from '../interfaces';
+import { dtmp, fSpat, fTemp, tmp } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -29,11 +29,17 @@ export class APIService {
     return this.http.get<fSpat[]>('http://localhost:5000/allDays');
   }
 
-  public getDateRangeVal(): Observable<tmp[]> {
-    if (this.start != '' || this.end != '') {
-      return this.http.get<tmp[]>('http://localhost:5000/getQuadValues?start=' + this.start + '&end=' + this.end)
+  public getDateRangeVal(start?: string, stop?: string): Observable<tmp[]> {
+    if (start != undefined || stop != undefined) {
+      return this.http.get<tmp[]>('http://localhost:5000/getQuadValues?start=' + start + '&end=' + stop)
     }
     return this.http.get<tmp[]>('http://localhost:5000/getQuadValues');
+  }
+  public getDV(start?: string, stop?: string): Observable<dtmp[]> {
+    if (start != undefined && stop != undefined) {
+      return this.http.get<dtmp[]>('http://localhost:5000/getDV?start=' + start + '&end=' + stop)
+    }
+    return this.http.get<dtmp[]>('http://localhost:5000/getDV');
   }
 
   public setVariable(amenity: string) {

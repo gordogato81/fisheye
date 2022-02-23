@@ -22,3 +22,8 @@ export interface tmp {
     lon: number,
     tfh: number
 }
+
+export interface dtmp {
+    coords: [number, number],
+    tfh: number
+}

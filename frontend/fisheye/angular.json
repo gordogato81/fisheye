@@ -37,7 +37,9 @@
               "./node_modules/leaflet/dist/leaflet.css",
               "src/styles.sass"
             ],
-            "scripts": []
+            "scripts": [
+              "src/assets/js/render-queue.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -105,7 +107,9 @@
             "styles": [
               "src/styles.sass"
             ],
-            "scripts": []
+            "scripts": [
+              "src/assets/js/render-queue.js"
+            ]
           }
         }
       }
