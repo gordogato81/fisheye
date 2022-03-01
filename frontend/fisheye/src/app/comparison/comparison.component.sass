@@ -1,0 +1,56 @@
+
+
+%width-containers
+    display: inline-block
+    width: 24%
+    height: 880px 
+
+%height-containers
+    display: flow-root
+    width: 100%
+    background: red
+    margin: 1%
+
+%comp-map
+    height: 430px
+
+.container
+    background: #F4F4F4
+    width: 98%
+    margin: 0.4% 1%
+
+
+.map-container-left
+    @extend %width-containers
+    margin-right: 0.3%
+
+.map-container-right
+    @extend %width-containers
+    margin-right: 1%
+
+.navigation-container
+    @extend %width-containers
+
+.filter
+    @extend %width-containers
+
+.map-container-top
+    @extend %height-containers
+
+.map-container-bottom
+    @extend %height-containers
+
+#map1
+    @extend %comp-map
+
+#map2
+    @extend %comp-map
+
+#map3
+    @extend %comp-map
+
+#map4
+    @extend %comp-map
+
+#navigation
+    height: 863px

@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import * as L from 'leaflet';
-import { dtmp, fSpat, fTemp, tmp } from '../interfaces';
+import { dtmp, tmp } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -22,12 +21,8 @@ export class APIService {
   id: any
 
   // inject the http client
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // retrieve pubs from server
-  public getAllDays(): Observable<fSpat[]> {
-    return this.http.get<fSpat[]>('http://localhost:5000/allDays');
-  }
 
   public getDateRangeVal(start?: string, stop?: string): Observable<tmp[]> {
     if (start != undefined || stop != undefined) {
@@ -42,12 +37,13 @@ export class APIService {
     return this.http.get<dtmp[]>('http://localhost:5000/getDV');
   }
 
-  public setVariable(amenity: string) {
-    this.amenity = amenity;
-  }
-
-  public getMapRef(mapRef: any) {
-    this.map = mapRef;
+  public getLcV(start?: string, stop?: string, bl?: [number, number], tr?: [number, number]): Observable<tmp[]> {
+    if (start != undefined && stop != undefined && bl != undefined && tr != undefined) {
+      return this.http.get<tmp[]>('http://localhost:5000/getLcV?start='
+        + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
+        + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1]);
+    }
+    return this.http.get<tmp[]>('http://localhost:5000/getLcV');
   }
 
 }
