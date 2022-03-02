@@ -3,7 +3,7 @@ import { APIService } from '../service/api.service';
 import * as L from 'leaflet';
 import * as d3 from 'd3';
 import { tmp } from '../interfaces';
-import { DateRange } from '@angular/material/datepicker';
+import { MatSliderChange } from '@angular/material/slider';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ExplorationService } from '../service/exploration.service';
 
@@ -27,6 +27,10 @@ export class ExplorationComponent implements OnInit {
   private render: any;
   private loaded: boolean = false;
   private context: any;
+  private sliderVal: number = 0;
+  private intervalLength: number = 31;
+  sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element))}; 
+  sliderMax: number = 366;   
   dateRange: any;
   startDate: any;
   endDate: any;
@@ -117,7 +121,28 @@ export class ExplorationComponent implements OnInit {
     return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
   }
 
+  onInputChange(event: MatSliderChange) {
+    const that = this;
+    this.sliderVal = event.value ?? 0;
+    const start = this.valToDate(this.sliderVal);
+    const end = this.intervalToEndDate(start);
+    this.getData(this.dateToStr(start), this.dateToStr(end));
+    // this.getData()
+  }
+
+  valToDate(value: number) {
+    const curr_date = new Date('2020-12-31');
+    const new_val = this.sliderMax - value; // determines the difference in the number of days between the selected value and the max value
+    const new_milli = curr_date.valueOf() - (new_val * 1000 * 60 * 60 * 24); // converts the number of days into milliseconds and subtracts from the latest day in milliseconds
+    const new_date = new Date(new_milli);
+    return new_date;
+  }
   
+  intervalToEndDate(start: Date) {
+    let date = new Date(start);
+    date.setDate(date.getDate() + this.intervalLength);
+    return date;
+  }
 
   detSize(d: any) {
     this.map = this.es.getMap();
@@ -135,8 +160,8 @@ export class ExplorationComponent implements OnInit {
       second = L.latLng(lat + 0.1, lon + 0.1);
     }
 
-    let diffX = Math.abs(this.map.latLngToContainerPoint(first).x - this.map.latLngToContainerPoint(second).x)
-    let diffY = Math.abs(this.map.latLngToContainerPoint(first).y - this.map.latLngToContainerPoint(second).y)
+    let diffX = Math.abs(this.map.latLngToContainerPoint(first).x - this.map.latLngToContainerPoint(second).x);
+    let diffY = Math.abs(this.map.latLngToContainerPoint(first).y - this.map.latLngToContainerPoint(second).y);
     diffX = diffX < 1 ? 1 : diffX;
     diffY = diffY < 1 ? 1 : diffY;
     const size: [number, number] = [diffX, diffY];

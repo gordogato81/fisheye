@@ -12,5 +12,5 @@
   <mat-error *ngIf="range.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
 </mat-form-field>
 </mat-card>
-<mat-slider id="slider" min="1" max="366" step="1" value="365"></mat-slider>
+<mat-slider id="slider" thumbLabel (change)="onInputChange($event)" [displayWith]="sliderDisplay" [min]="1" [max]="sliderMax" step="1" value="0"></mat-slider>
 <div id="map"></div>
