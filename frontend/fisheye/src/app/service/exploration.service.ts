@@ -14,6 +14,7 @@ export class ExplorationService {
   dMax: number = 0;
   renderer: any;
   data: any;
+  interval: number = 0;
 
   public setMap(map: L.Map) {
     this.map = map;
@@ -61,5 +62,13 @@ export class ExplorationService {
 
   public getData() {
     return this.data;
+  }
+
+  public setInterval(interval: number) {
+    this.interval = interval;
+  }
+
+  public getInterval() {
+    return this.interval;
   }
 }

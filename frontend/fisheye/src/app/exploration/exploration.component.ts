@@ -27,10 +27,10 @@ export class ExplorationComponent implements OnInit {
   private render: any;
   private loaded: boolean = false;
   private context: any;
-  private sliderVal: number = 0;
-  private intervalLength: number = 31;
-  sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element))}; 
-  sliderMax: number = 366;   
+  private intervalLength: number = 5;
+  sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) };
+  sliderMax: number = 366;
+  sliderVal: number = 1;
   dateRange: any;
   startDate: any;
   endDate: any;
@@ -61,9 +61,11 @@ export class ExplorationComponent implements OnInit {
 
     this.context = this.canvas.node().getContext('2d');
     this.es.setContext(this.context);
-
-    this.getData("2020-03-01", "2020-03-31");
-
+    const start = "2020-03-01";
+    const end = "2020-03-05";
+    
+    this.getData(start, end);
+    this.es.setInterval(this.dateRangeToInterval(new Date(start), new Date(end)));
   }
 
   private getData(start: string, end: string) {
@@ -109,11 +111,12 @@ export class ExplorationComponent implements OnInit {
       }
     }
   }
-  public onDateChange(event: any) {
-    console.log(new Date(Date.parse(this.range.value.start)));
-    const start = this.dateToStr(new Date(Date.parse(this.range.value.start)))
-    const end = this.dateToStr(new Date(Date.parse(this.range.value.end)))
-    this.getData(start, end)
+  onDateChange(event: any) {
+    const start = new Date(Date.parse(this.range.value.start));
+    const end = new Date(Date.parse(this.range.value.end));
+    this.sliderVal = this.dateToVal(start);
+    this.intervalLength = this.dateRangeToInterval(start, end);
+    this.getData(this.dateToStr(start), this.dateToStr(end));
 
   }
 
@@ -126,22 +129,32 @@ export class ExplorationComponent implements OnInit {
     this.sliderVal = event.value ?? 0;
     const start = this.valToDate(this.sliderVal);
     const end = this.intervalToEndDate(start);
+    this.range.setValue({start: start, end: end});
     this.getData(this.dateToStr(start), this.dateToStr(end));
-    // this.getData()
   }
 
   valToDate(value: number) {
-    const curr_date = new Date('2020-12-31');
+    const max_date = new Date(this.maxDate);
     const new_val = this.sliderMax - value; // determines the difference in the number of days between the selected value and the max value
-    const new_milli = curr_date.valueOf() - (new_val * 1000 * 60 * 60 * 24); // converts the number of days into milliseconds and subtracts from the latest day in milliseconds
+    const new_milli = max_date.valueOf() - (new_val * 1000 * 60 * 60 * 24); // converts the number of days into milliseconds and subtracts from the latest day in milliseconds
     const new_date = new Date(new_milli);
     return new_date;
   }
-  
+
+  dateToVal(date: Date) {
+    const min_date = new Date(this.minDate);
+    return this.dateRangeToInterval(min_date, date);
+  }
+
   intervalToEndDate(start: Date) {
     let date = new Date(start);
     date.setDate(date.getDate() + this.intervalLength);
     return date;
+  }
+
+  dateRangeToInterval(start: Date, end: Date) {
+    const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+    return Math.round(Math.abs((start.valueOf() - end.valueOf()) / oneDay));
   }
 
   detSize(d: any) {
