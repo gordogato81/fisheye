@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { APIService } from '../service/api.service';
+import { FormControl, FormGroup } from '@angular/forms';
 import * as L from 'leaflet'
 import * as d3 from 'd3';
 import { tmp } from '../interfaces';
+import { ComparisonService } from '../service/comparison.service';
+import { range } from 'd3';
 
 declare var renderQueue: any;
 
@@ -13,7 +16,7 @@ declare var renderQueue: any;
 })
 export class ComparisonComponent implements OnInit {
 
-  constructor(private ds: APIService) { }
+  constructor(private ds: APIService, private cs: ComparisonService) { }
   private navigation!: L.Map;
   private map1!: L.Map;
   private map2!: L.Map;
@@ -37,6 +40,24 @@ export class ComparisonComponent implements OnInit {
   private init2: boolean = false;
   private init3: boolean = false;
   private init4: boolean = false;
+  minDate: Date = new Date('2020-01-01');
+  maxDate: Date = new Date('2020-12-31');
+  range1 = new FormGroup({
+    start: new FormControl(),
+    end: new FormControl(),
+  });
+  range2 = new FormGroup({
+    start: new FormControl(),
+    end: new FormControl(),
+  });
+  range3 = new FormGroup({
+    start: new FormControl(),
+    end: new FormControl(),
+  });
+  range4 = new FormGroup({
+    start: new FormControl(),
+    end: new FormControl(),
+  });
 
   ngOnInit(): void {
     const that = this;
@@ -49,69 +70,46 @@ export class ComparisonComponent implements OnInit {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.navigation);
-
-    this.map1 = L.map('map1', { dragging: false, zoomControl: false }).setView([18, 0], 2.5);
-    this.map2 = L.map('map2', { dragging: false, zoomControl: false }).setView([18, 0], 2.5);
-    this.map3 = L.map('map3', { dragging: false, zoomControl: false }).setView([18, 0], 2.5);
-    this.map4 = L.map('map4', { dragging: false, zoomControl: false }).setView([18, 0], 2.5);
-
-    this.initMap(this.map1);
-    this.initMap(this.map2);
-    this.initMap(this.map3);
-    this.initMap(this.map4);
+    const mapOptions = { dragging: false, zoomControl: false }
+    this.map1 = L.map('map1', mapOptions).setView([18, 0], 2.5);
+    this.map2 = L.map('map2', mapOptions).setView([18, 0], 2.5);
+    this.map3 = L.map('map3', mapOptions).setView([18, 0], 2.5);
+    this.map4 = L.map('map4', mapOptions).setView([18, 0], 2.5);
+    this.cs.setMap(this.map1, 1);
+    this.cs.setMap(this.map2, 2);
+    this.cs.setMap(this.map3, 3);
+    this.cs.setMap(this.map4, 4);
+    this.initMap(1);
+    this.initMap(2);
+    this.initMap(3);
+    this.initMap(4);
     // Stop that's enough maps
 
-    // Attach the correct canvas to each context
-    const canvas1: any = d3.select(this.map1.getPanes().overlayPane).select('canvas');
-    const canvas2: any = d3.select(this.map2.getPanes().overlayPane).select('canvas');
-    const canvas3: any = d3.select(this.map3.getPanes().overlayPane).select('canvas');
-    const canvas4: any = d3.select(this.map4.getPanes().overlayPane).select('canvas');
+    const render1 = this.cs.getRenderer(1);
+    const render2 = this.cs.getRenderer(2);
+    const render3 = this.cs.getRenderer(2);
+    const render4 = this.cs.getRenderer(2);
 
-    this.context1 = canvas1.node().getContext('2d');
-    this.context2 = canvas2.node().getContext('2d');
-    this.context3 = canvas3.node().getContext('2d');
-    this.context4 = canvas4.node().getContext('2d');
+    this.range1.setValue({start: '2020-01-01', end: '2020-03-31'});
+    this.range2.setValue({start: '2020-04-01', end: '2020-06-30'});
+    this.range3.setValue({start: '2020-07-01', end: '2020-09-30'});
+    this.range4.setValue({start: '2020-10-01', end: '2020-12-31'});
 
-    update(); // Forcing update to initalize values
-    const render1 = new renderQueue(draw1).clear(clearContext1)
-    const render2 = new renderQueue(draw2).clear(clearContext2)
-    const render3 = new renderQueue(draw3).clear(clearContext3)
-    const render4 = new renderQueue(draw4).clear(clearContext4)
+    this.getData1('2020-01-01', '2020-03-31', this.bl, this.tr);
+    this.getData2('2020-04-01', '2020-06-30', this.bl, this.tr);
+    this.getData3('2020-07-01', '2020-09-30', this.bl, this.tr);
+    this.getData4('2020-10-01', '2020-12-31', this.bl, this.tr);
 
-    this.ds.getLcV('2020-01-01', '2020-03-31', this.bl, this.tr).subscribe(data => {
-      this.max1 = d3.max(data, (d: any) => +d.tfh) ?? 0;
-      this.data1 = data;
-      this.init1 = true;
-      render1(data);
-    });
-
-    this.ds.getLcV('2020-04-01', '2020-06-30', this.bl, this.tr).subscribe(data => {
-      this.max2 = d3.max(data, (d: any) => +d.tfh) ?? 0;
-      this.data2 = data;
-      this.init2 = true;
-      render2(data);
-    });
-    this.ds.getLcV('2020-07-01', '2020-09-30', this.bl, this.tr).subscribe(data => {
-      this.max3 = d3.max(data, (d: any) => +d.tfh) ?? 0;
-      this.data3 = data;
-      this.init3 = true;
-      render3(data);
-    });
-    this.ds.getLcV('2020-10-01', '2020-12-31', this.bl, this.tr).subscribe(data => {
-      this.max4 = d3.max(data, (d: any) => +d.tfh) ?? 0;
-      this.data4 = data;
-      this.init4 = true;
-      render4(data);
-    });
-
-
-    that.navigation.on('zoomend', update);
-    that.navigation.on('moveend', update);
-
+    that.navigation.on('zoomend moveend', update);
+  
     function update() {
       const zoom = that.navigation.getZoom();
       const center = that.navigation.getCenter();
       const bounds = that.map1.getBounds();
+      const init1 = that.cs.getLoaded(1);
+      const init2 = that.cs.getLoaded(2);
+      const init3 = that.cs.getLoaded(3);
+      const init4 = that.cs.getLoaded(4);
       that.bl[0] = bounds.getSouth();
       that.bl[1] = bounds.getWest();
       that.tr[0] = bounds.getNorth();
@@ -120,85 +118,181 @@ export class ComparisonComponent implements OnInit {
       that.map2.setView(center).setZoom(zoom);
       that.map3.setView(center).setZoom(zoom);
       that.map4.setView(center).setZoom(zoom);
-      if (that.init1) render1(that.data1);
-      if (that.init2) render2(that.data2);
-      if (that.init3) render3(that.data3);
-      if (that.init4) render4(that.data4);
+      if (init1) {
+        const start = new Date(Date.parse(that.range1.value.start));
+        const end = new Date(Date.parse(that.range1.value.end));
+        that.getData1(that.dateToStr(start), that.dateToStr(end), that.bl, that.tr);
+      }
+      if (init2) {
+        const start = new Date(Date.parse(that.range2.value.start));
+        const end = new Date(Date.parse(that.range2.value.end));
+        that.getData2(that.dateToStr(start), that.dateToStr(end), that.bl, that.tr);
+      }
+      if (init3) {
+        const start = new Date(Date.parse(that.range3.value.start));
+        const end = new Date(Date.parse(that.range3.value.end));
+        that.getData3(that.dateToStr(start), that.dateToStr(end), that.bl, that.tr);
+      }
+      if (init4) {
+        const start = new Date(Date.parse(that.range4.value.start));
+        const end = new Date(Date.parse(that.range4.value.end));
+        that.getData4(that.dateToStr(start), that.dateToStr(end), that.bl, that.tr);
+      }
     }
-    function draw1(d: tmp) {
-      let colorMap = d3.scaleSymlog<string, number>()
-      colorMap.domain([0, that.max1]).range(["orange", "purple"])
-      const newX = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-      const newY = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-      that.context1.fill();
-      that.context1.beginPath();
-      that.context1.fillStyle = colorMap(d.tfh);
-      that.context1.rect(newX, newY, that.detSize(d, that.map1)[0], that.detSize(d, that.map1)[1]);
-      that.context1.fill();
-      that.context1.closePath();
-    }
-
-    function clearContext1() {
-      that.context1.clearRect(0, 0, canvas1.attr("width"), canvas1.attr("height"));
-    }
-
-    function draw2(d: tmp) {
-      let colorMap = d3.scaleSymlog<string, number>()
-      colorMap.domain([0, that.max2]).range(["orange", "purple"])
-      const newX = that.map2.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-      const newY = that.map2.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-      that.context2.fill();
-      that.context2.beginPath();
-      that.context2.fillStyle = colorMap(d.tfh);
-      that.context2.rect(newX, newY, that.detSize(d, that.map2)[0], that.detSize(d, that.map2)[1]);
-      that.context2.fill();
-      that.context2.closePath();
-    }
-
-    function clearContext2() {
-      that.context2.clearRect(0, 0, canvas2.attr("width"), canvas2.attr("height"));
-    }
-
-    function draw3(d: tmp) {
-      let colorMap = d3.scaleSymlog<string, number>()
-      colorMap.domain([0, that.max3]).range(["orange", "purple"])
-      const newX = that.map3.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-      const newY = that.map3.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-      that.context3.fill();
-      that.context3.beginPath();
-      that.context3.fillStyle = colorMap(d.tfh);
-      that.context3.rect(newX, newY, that.detSize(d, that.map3)[0], that.detSize(d, that.map3)[1]);
-      that.context3.fill();
-      that.context3.closePath();
-    }
-
-    function clearContext3() {
-      that.context3.clearRect(0, 0, canvas3.attr("width"), canvas3.attr("height"));
-    }
-
-    function draw4(d: tmp) {
-      let colorMap = d3.scaleSymlog<string, number>()
-      colorMap.domain([0, that.max4]).range(["orange", "purple"])
-      const newX = that.map4.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-      const newY = that.map4.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-      that.context4.fill();
-      that.context4.beginPath();
-      that.context4.fillStyle = colorMap(d.tfh);
-      that.context4.rect(newX, newY, that.detSize(d, that.map4)[0], that.detSize(d, that.map4)[1]);
-      that.context4.fill();
-      that.context4.closePath();
-    }
-
-    function clearContext4() {
-      that.context4.clearRect(0, 0, canvas4.attr("width"), canvas4.attr("height"));
-    }
-
   }
 
-  initMap(map: L.Map) {
+  initMap(num: number) {
+    const map = <L.Map>this.cs.getMap(num);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
-
     L.canvas().addTo(map);
+    const canvas: any = d3.select(map.getPanes().overlayPane).select('canvas');
+    const context = canvas.node().getContext('2d');
+    this.cs.setCanvas(canvas, num);
+    this.cs.setContext(context, num);
+  }
+
+  getData1(start: string, end: string, bl: [number, number], tr: [number, number]) {
+    const that = this;
+    const id = 1;
+    let d: any;
+    let dMax: number;
+    const map = this.cs.getMap(id);
+    const context = this.cs.getContext(id);
+    const canvas = this.cs.getCanvas(id);
+    this.ds.getLcV(start, end, bl, tr).subscribe(data => {
+      this.cs.setData(data, id);
+      this.cs.setLoaded(id);
+      const render = new renderQueue(draw).clear(clearContext);
+      dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
+      this.cs.setMax(dMax, id);
+      render(data);
+    })
+
+    function draw(d: tmp) {
+      let colorMap = d3.scaleSymlog<string, number>();
+      const daMax = that.maxMax();
+      colorMap.domain([0, daMax]).range(["orange", "purple"]);
+      const newX = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+      const newY = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+      context.fill();
+      context.beginPath();
+      context.fillStyle = colorMap(d.tfh);
+      context.rect(newX, newY, that.detSize(d, map)[0], that.detSize(d, map)[1]);
+      context.fill();
+      context.closePath();
+    }
+
+    function clearContext() {
+      context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
+    }
+  }
+
+  getData2(start: string, end: string, bl: [number, number], tr: [number, number]) {
+    const that = this;
+    const id = 2;
+    let d: any;
+    let dMax: number;
+    const map = this.cs.getMap(id);
+    const context = this.cs.getContext(id);
+    const canvas = this.cs.getCanvas(id);
+    this.ds.getLcV(start, end, bl, tr).subscribe(data => {
+      this.cs.setData(data, id);
+      this.cs.setLoaded(id);
+      const render = new renderQueue(draw).clear(clearContext);
+      dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
+      this.cs.setMax(dMax, id);
+      render(data);
+    })
+
+    function draw(d: tmp) {
+      let colorMap = d3.scaleSymlog<string, number>();
+      const daMax = that.maxMax();
+      colorMap.domain([0, daMax]).range(["orange", "purple"]);
+      const newX = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+      const newY = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+      context.fill();
+      context.beginPath();
+      context.fillStyle = colorMap(d.tfh);
+      context.rect(newX, newY, that.detSize(d, map)[0], that.detSize(d, map)[1]);
+      context.fill();
+      context.closePath();
+    }
+
+    function clearContext() {
+      context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
+    }
+  }
+
+  getData3(start: string, end: string, bl: [number, number], tr: [number, number]) {
+    const that = this;
+    const id = 3;
+    let d: any;
+    let dMax: number;
+    const map = this.cs.getMap(id);
+    const context = this.cs.getContext(id);
+    const canvas = this.cs.getCanvas(id);
+    this.ds.getLcV(start, end, bl, tr).subscribe(data => {
+      this.cs.setData(data, id);
+      this.cs.setLoaded(id);
+      const render = new renderQueue(draw).clear(clearContext);
+      dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
+      this.cs.setMax(dMax, id);
+      render(data);
+    })
+
+    function draw(d: tmp) {
+      let colorMap = d3.scaleSymlog<string, number>();
+      const daMax = that.maxMax();
+      colorMap.domain([0, daMax]).range(["orange", "purple"]);
+      const newX = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+      const newY = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+      context.fill();
+      context.beginPath();
+      context.fillStyle = colorMap(d.tfh);
+      context.rect(newX, newY, that.detSize(d, map)[0], that.detSize(d, map)[1]);
+      context.fill();
+      context.closePath();
+    }
+
+    function clearContext() {
+      context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
+    }
+  }
+
+  getData4(start: string, end: string, bl: [number, number], tr: [number, number]) {
+    const that = this;
+    const id = 4;
+    let d: any;
+    let dMax: number;
+    const map = this.cs.getMap(id);
+    const context = this.cs.getContext(id);
+    const canvas = this.cs.getCanvas(id);
+    this.ds.getLcV(start, end, bl, tr).subscribe(data => {
+      this.cs.setData(data, id);
+      this.cs.setLoaded(id);
+      const render = new renderQueue(draw).clear(clearContext);
+      dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
+      this.cs.setMax(dMax, id);
+      render(data);
+    })
+
+    function draw(d: tmp) {
+      let colorMap = d3.scaleSymlog<string, number>();
+      const daMax = that.maxMax();
+      colorMap.domain([0, daMax]).range(["orange", "purple"]);
+      const newX = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+      const newY = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+      context.fill();
+      context.beginPath();
+      context.fillStyle = colorMap(d.tfh);
+      context.rect(newX, newY, that.detSize(d, map)[0], that.detSize(d, map)[1]);
+      context.fill();
+      context.closePath();
+    }
+
+    function clearContext() {
+      context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
+    }
   }
 
   detSize(d: any, map: any) {
@@ -212,5 +306,28 @@ export class ComparisonComponent implements OnInit {
     diffY = diffY < 1 ? 1 : diffY;
     const size: [number, number] = [diffX, diffY];
     return size
+  }
+
+  dateToStr(d: Date) {
+    return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
+  }
+
+  onDateChange(event: any) {
+
+  }
+
+  maxMax() {
+    let maxes: number[]= [];
+    let maxMax = 0;
+
+    maxes.push(this.cs.getMax(1));
+    maxes.push(this.cs.getMax(2));
+    maxes.push(this.cs.getMax(3));
+    maxes.push(this.cs.getMax(4));
+
+    maxes.forEach(element => {
+      if (element > maxMax) maxMax = element;
+    });
+    return maxMax;
   }
 }

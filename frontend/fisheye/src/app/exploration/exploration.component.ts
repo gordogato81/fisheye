@@ -31,9 +31,6 @@ export class ExplorationComponent implements OnInit {
   sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) };
   sliderMax: number = 366;
   sliderVal: number = 1;
-  dateRange: any;
-  startDate: any;
-  endDate: any;
   minDate: Date = new Date('2020-01-01');
   maxDate: Date = new Date('2020-12-31');
   range = new FormGroup({
@@ -67,6 +64,7 @@ export class ExplorationComponent implements OnInit {
     this.getData(start, end);
     this.es.setInterval(this.dateRangeToInterval(new Date(start), new Date(end)));
   }
+
 
   private getData(start: string, end: string) {
     const that = this;
@@ -111,6 +109,8 @@ export class ExplorationComponent implements OnInit {
       }
     }
   }
+
+
   onDateChange(event: any) {
     const start = new Date(Date.parse(this.range.value.start));
     const end = new Date(Date.parse(this.range.value.end));
@@ -120,10 +120,6 @@ export class ExplorationComponent implements OnInit {
 
   }
 
-  dateToStr(d: Date) {
-    return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
-  }
-
   onInputChange(event: MatSliderChange) {
     const that = this;
     this.sliderVal = event.value ?? 0;
@@ -131,6 +127,10 @@ export class ExplorationComponent implements OnInit {
     const end = this.intervalToEndDate(start);
     this.range.setValue({start: start, end: end});
     this.getData(this.dateToStr(start), this.dateToStr(end));
+  }
+
+  dateToStr(d: Date) {
+    return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
   }
 
   valToDate(value: number) {

@@ -1,22 +1,70 @@
 <div class="container">
   <div class="map-container-left">
     <div class="map-container-top">
-        <div id="map1"></div>
+      <mat-form-field appearance="fill" style=" margin-bottom: -1.25em">
+        <mat-label>Enter a date range</mat-label>
+        <mat-date-range-input [formGroup]="range1" [min]="minDate" [max]="maxDate" [rangePicker]="picker1">
+          <input matStartDate formControlName="start" placeholder="2020-01-01">
+          <input matEndDate formControlName="end" placeholder="2020-01-05" (dateChange)="onDateChange($event)">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker1></mat-date-range-picker>
+      
+        <mat-error *ngIf="range1.controls['start'].hasError('matStartDateInvalid')">Invalid start date</mat-error>
+        <mat-error *ngIf="range1.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
+      </mat-form-field>
+      <div id="map1"></div>
     </div>
     <div class="map-container-bottom">
-        <div id="map3"></div>
+      <div id="map3"></div>
+      <mat-form-field appearance="fill" style=" margin-bottom: -1.25em">
+        <mat-label>Enter a date range</mat-label>
+        <mat-date-range-input [formGroup]="range3" [min]="minDate" [max]="maxDate" [rangePicker]="picker3">
+          <input matStartDate formControlName="start" placeholder="2020-01-01">
+          <input matEndDate formControlName="end" placeholder="2020-01-05" (dateChange)="onDateChange($event)">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker3"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker3></mat-date-range-picker>
+      
+        <mat-error *ngIf="range1.controls['start'].hasError('matStartDateInvalid')">Invalid start date</mat-error>
+        <mat-error *ngIf="range1.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
+      </mat-form-field>
     </div>
   </div>
   <div class="map-container-right">
     <div class="map-container-top">
-        <div id="map2"></div>
+      <mat-form-field appearance="fill" style=" margin-bottom: -1.25em">
+        <mat-label>Enter a date range</mat-label>
+        <mat-date-range-input [formGroup]="range2" [min]="minDate" [max]="maxDate" [rangePicker]="picker2">
+          <input matStartDate formControlName="start" placeholder="2020-01-01">
+          <input matEndDate formControlName="end" placeholder="2020-01-05" (dateChange)="onDateChange($event)">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker2></mat-date-range-picker>
+      
+        <mat-error *ngIf="range1.controls['start'].hasError('matStartDateInvalid')">Invalid start date</mat-error>
+        <mat-error *ngIf="range1.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
+      </mat-form-field>
+      <div id="map2"></div>
     </div>
     <div class="map-container-bottom">
-        <div id="map4"></div>
+      <div id="map4"></div>
+      <mat-form-field appearance="fill" style=" margin-bottom: -1.25em">
+        <mat-label>Enter a date range</mat-label>
+        <mat-date-range-input [formGroup]="range4" [min]="minDate" [max]="maxDate" [rangePicker]="picker4">
+          <input matStartDate formControlName="start" placeholder="2020-01-01">
+          <input matEndDate formControlName="end" placeholder="2020-01-05" (dateChange)="onDateChange($event)">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker4"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker4></mat-date-range-picker>
+      
+        <mat-error *ngIf="range1.controls['start'].hasError('matStartDateInvalid')">Invalid start date</mat-error>
+        <mat-error *ngIf="range1.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
+      </mat-form-field>
     </div>
   </div>
   <div class="navigation-container">
-      <div id="navigation"></div>
+    <div id="navigation"></div>
   </div>
   <div class="filter"></div>
 </div>
