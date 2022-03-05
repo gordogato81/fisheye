@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -7,6 +8,7 @@ export class ComparisonService {
 
   constructor() { }
 
+  navigation!: L.Map;
   map1!: L.Map;
   map2!: L.Map;
   map3!: L.Map;
@@ -35,9 +37,17 @@ export class ComparisonService {
   init2: boolean = false;
   init3: boolean = false;
   init4: boolean = false;
+  testSubject = new Subject<any>();
   
+
+  sendSubject(max: number) {
+    
+  }
+
   public setMap(map: L.Map, id: number) {
-    if (id == 1) {
+    if (id == 0) {
+      this.navigation = map;
+    } else if (id == 1) {
       this.map1 = map;
     } else if (id == 2) {
       this.map2 = map;
@@ -49,7 +59,9 @@ export class ComparisonService {
   }
 
   public getMap(id: number) {
-    if (id == 1) {
+    if (id == 0) {
+      return this.navigation;
+    } else if (id == 1) {
       return this.map1;
     } else if (id == 2) {
       return this.map2;
