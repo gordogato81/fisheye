@@ -7,7 +7,6 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSliderModule } from '@angular/material/slider';
 import { ReactiveFormsModule } from '@angular/forms';
-
 import { ExplorationComponent } from './exploration.component';
 
 const routes: Routes = [
@@ -24,7 +23,7 @@ const routes: Routes = [
     MatNativeDateModule,
     MatSliderModule,
     MatDatepickerModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ]
 })
 export class ExplorationModule { }

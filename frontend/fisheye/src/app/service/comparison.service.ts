@@ -9,6 +9,8 @@ export class ComparisonService {
   constructor() { }
 
   navigation!: L.Map;
+  center: any;
+  zoom: any;
   map1!: L.Map;
   map2!: L.Map;
   map3!: L.Map;
@@ -37,11 +39,22 @@ export class ComparisonService {
   init2: boolean = false;
   init3: boolean = false;
   init4: boolean = false;
-  testSubject = new Subject<any>();
-  
 
-  sendSubject(max: number) {
-    
+
+  public setCenter(center: any) {
+    this.center = center;
+  }
+
+  public getCenter() {
+    return this.center;
+  }
+
+  public setZoom(zoom: any) {
+    this.zoom = zoom;
+  }
+
+  public getZoom() {
+    return this.zoom;
   }
 
   public setMap(map: L.Map, id: number) {

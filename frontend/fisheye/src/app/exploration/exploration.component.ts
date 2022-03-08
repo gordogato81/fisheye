@@ -6,6 +6,7 @@ import { tmp } from '../interfaces';
 import { MatSliderChange } from '@angular/material/slider';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ExplorationService } from '../service/exploration.service';
+import { Options } from '@angular-slider/ngx-slider';
 
 declare var renderQueue: any;
 
@@ -37,9 +38,20 @@ export class ExplorationComponent implements OnInit {
     start: new FormControl(),
     end: new FormControl(),
   });
+  sliderForm = new FormGroup({
+    sliderControl: new FormControl([20, 50])
+  });
+  public options: Options = {
+    floor: 0,
+    ceil: 365,
+    step: 1,
+    translate: (value: number): string => {
+      return this.dateToStr(this.valToDate(value));
+    }
+  };
 
   ngOnInit(): void {
-    this.map = L.map('map').setView([18, 0], 2.5); // defaults to world view 
+    this.map = L.map('map', { worldCopyJump: true, preferCanvas: true }).setView([18, 0], 2.5); // defaults to world view 
 
     const tilelayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       minZoom: 2,
@@ -50,7 +62,9 @@ export class ExplorationComponent implements OnInit {
 
     tilelayer.addTo(this.map);
     L.canvas().addTo(this.map);
-
+    const bl = L.latLng(-90, -240);
+    const tr = L.latLng(90, 240)
+    this.map.setMaxBounds(L.latLngBounds(bl, tr))
     this.es.setMap(this.map);
 
     this.canvas = d3.select(this.map.getPanes().overlayPane).select('canvas');
@@ -60,9 +74,12 @@ export class ExplorationComponent implements OnInit {
     this.es.setContext(this.context);
     const start = "2020-03-01";
     const end = "2020-03-05";
-    
+
     this.getData(start, end);
     this.es.setInterval(this.dateRangeToInterval(new Date(start), new Date(end)));
+    this.sliderVal = this.dateToVal(new Date(start));
+    this.range.setValue({ start: start, end: end });
+
   }
 
 
@@ -91,12 +108,28 @@ export class ExplorationComponent implements OnInit {
       colorMap.domain([0, that.dMax]).range(["orange", "purple"])
       const newX = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
       const newY = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-      that.context.fill();
-      that.context.beginPath();
-      that.context.fillStyle = colorMap(d.tfh);
-      that.context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
-      that.context.fill();
-      that.context.closePath();
+
+      context.beginPath();
+      context.fillStyle = colorMap(d.tfh);
+      context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+      context.fill();
+      context.closePath();
+      const extendWest = 60; // width extension in longitude
+      if (d.lon < (-180 + extendWest)) { // extending towards the west
+        const extX = that.map.latLngToLayerPoint(L.latLng(d.lat, (d.lon + 360))).x;
+        context.beginPath();
+        context.fillStyle = colorMap(d.tfh);
+        context.rect(extX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+        context.fill();
+        context.closePath();
+      } else if (d.lon > (180 - extendWest)) { // extending towards the east
+        const extX = that.map.latLngToLayerPoint(L.latLng(d.lat, (-360 + d.lon))).x;
+        context.beginPath();
+        context.fillStyle = colorMap(d.tfh);
+        context.rect(extX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+        context.fill();
+        context.closePath();
+      }
     }
 
     function clearContext() {
@@ -125,7 +158,7 @@ export class ExplorationComponent implements OnInit {
     this.sliderVal = event.value ?? 0;
     const start = this.valToDate(this.sliderVal);
     const end = this.intervalToEndDate(start);
-    this.range.setValue({start: start, end: end});
+    this.range.setValue({ start: start, end: end });
     this.getData(this.dateToStr(start), this.dateToStr(end));
   }
 
@@ -181,4 +214,8 @@ export class ExplorationComponent implements OnInit {
     return size
   }
 
+
 }
+
+
+

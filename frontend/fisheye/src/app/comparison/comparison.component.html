@@ -21,7 +21,7 @@
         <mat-label>Enter a date range</mat-label>
         <mat-date-range-input [formGroup]="range3" [min]="minDate" [max]="maxDate" [rangePicker]="picker3">
           <input matStartDate formControlName="start" placeholder="2020-01-01">
-          <input matEndDate formControlName="end" placeholder="2020-01-05" (dateChange)="onDateChange($event, 2)">
+          <input matEndDate formControlName="end" placeholder="2020-01-05" (dateChange)="onDateChange($event, 3)">
         </mat-date-range-input>
         <mat-datepicker-toggle matSuffix [for]="picker3"></mat-datepicker-toggle>
         <mat-date-range-picker #picker3></mat-date-range-picker>
@@ -37,7 +37,7 @@
         <mat-label>Enter a date range</mat-label>
         <mat-date-range-input [formGroup]="range2" [min]="minDate" [max]="maxDate" [rangePicker]="picker2">
           <input matStartDate formControlName="start" placeholder="2020-01-01">
-          <input matEndDate formControlName="end" placeholder="2020-01-05" (dateChange)="onDateChange($event, 3)">
+          <input matEndDate formControlName="end" placeholder="2020-01-05" (dateChange)="onDateChange($event, 2)">
         </mat-date-range-input>
         <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
         <mat-date-range-picker #picker2></mat-date-range-picker>
@@ -64,11 +64,12 @@
     </div>
   </div>
   <div class="navigation-container">
+    <div id="border" class="leaflet-control-container leaflet-bottom"></div>
     <div id="navigation"></div>
   </div>
   <div class="filter">
     <mat-card id="filter">
-      <button mat-raised-button id="updateButton">Update Visualization</button>
+      <button mat-raised-button id="updateButton" (click)="clickUpdate()">Update Visualization</button>
     </mat-card>
   </div>
 </div>

@@ -24,7 +24,7 @@ def getQuadValues():
 
     query = """
     select cell_ll_lat as lat, cell_ll_lon as lon, sum(fishing_hours) as tfh
-    from "2020"
+    from "FishingHours"
     where
     date between %s AND %s
     AND fishing_hours > 0
@@ -67,7 +67,7 @@ def getLcV():
 
     query = """
     select cell_ll_lat as lat, cell_ll_lon as lon, sum(fishing_hours) as tfh
-    from "2020"
+    from "FishingHours"
     where
     cell_ll_lat between %s and %s
     and 
@@ -108,7 +108,7 @@ def getDV():
 
     query = """
     select cell_ll_lat as lat, cell_ll_lon as lon, sum(fishing_hours) as tfh
-    from "2020"
+    from "FishingHours"
     where
     date between %s AND %s
     AND fishing_hours > 0
