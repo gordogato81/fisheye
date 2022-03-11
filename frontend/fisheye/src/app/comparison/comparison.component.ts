@@ -22,25 +22,10 @@ export class ComparisonComponent implements OnInit {
   private map2!: L.Map;
   private map3!: L.Map;
   private map4!: L.Map;
-  private context1: any;
-  private context2: any;
-  private context3: any;
-  private context4: any;
-  private max1: number = 0;
-  private max2: number = 0;
-  private max3: number = 0;
-  private max4: number = 0;
-  private data1: any;
-  private data2: any;
-  private data3: any;
-  private data4: any;
   private bl: [number, number] = [0, 0];
   private tr: [number, number] = [10, 10];
-  private init1: boolean = false;
-  private init2: boolean = false;
-  private init3: boolean = false;
-  private init4: boolean = false;
-  minDate: Date = new Date('2020-01-01');
+  private totalFishingMax = 5486.0071;
+  minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
   range1 = new FormGroup({
     start: new FormControl(),
@@ -203,8 +188,7 @@ export class ComparisonComponent implements OnInit {
   getData1(start: string, end: string, bl: [number, number], tr: [number, number]) {
     const that = this;
     const id = 1;
-    let d: any;
-    let dMax: number;
+    // let dMax: number;
     const map = <L.Map>this.cs.getMap(id);
     const context = this.cs.getContext(id);
     const canvas = this.cs.getCanvas(id);
@@ -213,16 +197,16 @@ export class ComparisonComponent implements OnInit {
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
       this.cs.setRenderer(render, 1);
-      dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
-      console.log("max1: ", dMax);
-      this.cs.setMax(dMax, id);
+      // dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
+      // console.log("max1: ", dMax);
+      // this.cs.setMax(dMax, id);
       render(data);
 
       function draw(d: tmp) {
         let colorMap = d3.scaleSymlog<string, number>();
         //const daMax = that.maxMax();
         // console.log("maxMax1: ", daMax);
-        colorMap.domain([0, dMax]).range(["orange", "purple"]);
+        colorMap.domain([0, that.totalFishingMax]).range(["orange", "purple"]);
         const newX = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
         const newY = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
         context.beginPath();
@@ -241,8 +225,7 @@ export class ComparisonComponent implements OnInit {
   getData2(start: string, end: string, bl: [number, number], tr: [number, number]) {
     const that = this;
     const id = 2;
-    let d: any;
-    let dMax: number;
+    // let dMax: number;
     const map = <L.Map>this.cs.getMap(id);
     const context = this.cs.getContext(id);
     const canvas = this.cs.getCanvas(id);
@@ -251,16 +234,16 @@ export class ComparisonComponent implements OnInit {
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
       this.cs.setRenderer(render, 2);
-      dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
-      console.log("max2: ", dMax);
-      this.cs.setMax(dMax, id);
+      // dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
+      // console.log("max2: ", dMax);
+      // this.cs.setMax(dMax, id);
       render(data);
 
       function draw(d: tmp) {
         let colorMap = d3.scaleSymlog<string, number>();
         //const daMax = that.maxMax();
         // console.log("maxMax2: ", daMax);
-        colorMap.domain([0, dMax]).range(["orange", "purple"]);
+        colorMap.domain([0, that.totalFishingMax]).range(["orange", "purple"]);
         const newX = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
         const newY = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
 
@@ -280,8 +263,7 @@ export class ComparisonComponent implements OnInit {
   getData3(start: string, end: string, bl: [number, number], tr: [number, number]) {
     const that = this;
     const id = 3;
-    let d: any;
-    let dMax: number;
+    // let dMax: number;
     const map = <L.Map>this.cs.getMap(id);
     const context = this.cs.getContext(id);
     const canvas = this.cs.getCanvas(id);
@@ -290,9 +272,9 @@ export class ComparisonComponent implements OnInit {
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
       this.cs.setRenderer(render, 3);
-      dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
-      console.log("max3: ", dMax);
-      this.cs.setMax(dMax, id);
+      // dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
+      // console.log("max3: ", dMax);
+      // this.cs.setMax(dMax, id);
 
       render(data);
 
@@ -300,7 +282,7 @@ export class ComparisonComponent implements OnInit {
         let colorMap = d3.scaleSymlog<string, number>();
         //const daMax = that.maxMax();
         // console.log("maxMax3: ", daMax);
-        colorMap.domain([0, dMax]).range(["orange", "purple"]);
+        colorMap.domain([0, that.totalFishingMax]).range(["orange", "purple"]);
         const newX = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
         const newY = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
 
@@ -320,7 +302,7 @@ export class ComparisonComponent implements OnInit {
   getData4(start: string, end: string, bl: [number, number], tr: [number, number]) {
     const that = this;
     const id = 4;
-    let dMax: number;
+    // let dMax: number;
     const map = <L.Map>this.cs.getMap(id);
     const context = this.cs.getContext(id);
     const canvas = this.cs.getCanvas(id);
@@ -329,16 +311,16 @@ export class ComparisonComponent implements OnInit {
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
       this.cs.setRenderer(render, 4);
-      dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
-      console.log("max4: ", dMax);
-      this.cs.setMax(dMax, id);
+      // dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
+      // console.log("max4: ", dMax);
+      // this.cs.setMax(dMax, id);
       render(data);
       console.log(data);
       function draw(d: tmp) {
         let colorMap = d3.scaleSymlog<string, number>();
         // const daMax = that.maxMax();
         // console.log("maxMax4: ", daMax);
-        colorMap.domain([0, dMax]).range(["orange", "purple"]);
+        colorMap.domain([0, that.totalFishingMax]).range(["orange", "purple"]);
         const newX = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
         const newY = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
 

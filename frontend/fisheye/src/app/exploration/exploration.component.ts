@@ -2,11 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { APIService } from '../service/api.service';
 import * as L from 'leaflet';
 import * as d3 from 'd3';
-import { tmp } from '../interfaces';
+import { tmp, Country } from '../interfaces';
 import { MatSliderChange } from '@angular/material/slider';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ExplorationService } from '../service/exploration.service';
 import { Options } from '@angular-slider/ngx-slider';
+import {Observable} from 'rxjs';
+import {map, startWith} from 'rxjs/operators';
+
+import midData from '../../assets/json/midNew.json'
 
 declare var renderQueue: any;
 
@@ -28,16 +32,23 @@ export class ExplorationComponent implements OnInit {
   private render: any;
   private loaded: boolean = false;
   private context: any;
+  private tooltip: any;
   private intervalLength: number = 5;
   sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) };
-  sliderMax: number = 366;
+  sliderMax: number = 1461; //3288 = 2012 - 2020
   sliderVal: number = 1;
-  minDate: Date = new Date('2020-01-01');
+  minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
   range = new FormGroup({
     start: new FormControl(),
     end: new FormControl(),
   });
+  
+
+  myControl = new FormControl();
+  options1:  Country[] = midData;
+  filteredOptions!: Observable<Country[]>;
+
   sliderForm = new FormGroup({
     sliderControl: new FormControl([20, 50])
   });
@@ -51,7 +62,18 @@ export class ExplorationComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.map = L.map('map', { worldCopyJump: true, preferCanvas: true }).setView([18, 0], 2.5); // defaults to world view 
+    const that = this;
+    this.filteredOptions = this.myControl.valueChanges.pipe(
+      startWith(''),
+      map(value => (typeof value === 'string' ? value : value.name)),
+      map(name => (name ? this._filter(name) : this.options1.slice())),
+    );
+
+    const mapOptions = { 
+      worldCopyJump: true, 
+      // preferCanvas: true 
+    };
+    this.map = L.map('map', mapOptions).setView([18, 0], 2.5); // defaults to world view 
 
     const tilelayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       minZoom: 2,
@@ -72,6 +94,21 @@ export class ExplorationComponent implements OnInit {
 
     this.context = this.canvas.node().getContext('2d');
     this.es.setContext(this.context);
+
+    this.tooltip = d3.select('#tooltip')
+        .attr("class", "leaflet-interactive")
+        .style('visibility', 'hidden')
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "5px")
+        .style("padding", "10px")
+        .style('z-index', 1000000);
+
+    this.canvas
+      .on("pointermove", function (event: any, d: any) { that.mousemove(event, d) })
+      .on("pointerout", function (event: any, d: any) { that.mouseleave(d) });
+
     const start = "2020-03-01";
     const end = "2020-03-05";
 
@@ -82,6 +119,16 @@ export class ExplorationComponent implements OnInit {
 
   }
 
+
+  displayFn(country: Country): string {
+    return country && country.viewValue ? country.viewValue : '';
+  }
+
+  private _filter(name: string): Country[] {
+    const filterValue = name.toLowerCase();
+
+    return this.options1.filter(option => option.viewValue.toLowerCase().includes(filterValue));
+  }
 
   private getData(start: string, end: string) {
     const that = this;
@@ -106,30 +153,35 @@ export class ExplorationComponent implements OnInit {
     function draw(d: tmp) {
       let colorMap = d3.scaleSymlog<string, number>()
       colorMap.domain([0, that.dMax]).range(["orange", "purple"])
-      const newX = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+      let newX;
       const newY = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-
       context.beginPath();
       context.fillStyle = colorMap(d.tfh);
-      context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+      if (d.lon < 0) {
+        newX = that.map.latLngToLayerPoint(L.latLng(d.lat, (d.lon + 180))).x;
+        context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+      } else {
+        newX = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+        context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+      }
       context.fill();
       context.closePath();
-      const extendWest = 60; // width extension in longitude
-      if (d.lon < (-180 + extendWest)) { // extending towards the west
-        const extX = that.map.latLngToLayerPoint(L.latLng(d.lat, (d.lon + 360))).x;
-        context.beginPath();
-        context.fillStyle = colorMap(d.tfh);
-        context.rect(extX, newY, that.detSize(d)[0], that.detSize(d)[1]);
-        context.fill();
-        context.closePath();
-      } else if (d.lon > (180 - extendWest)) { // extending towards the east
-        const extX = that.map.latLngToLayerPoint(L.latLng(d.lat, (-360 + d.lon))).x;
-        context.beginPath();
-        context.fillStyle = colorMap(d.tfh);
-        context.rect(extX, newY, that.detSize(d)[0], that.detSize(d)[1]);
-        context.fill();
-        context.closePath();
-      }
+      // const extendWest = 60; // width extension in longitude
+      // if (d.lon < (-180 + extendWest)) { // extending towards the west
+      //   const extX = that.map.latLngToLayerPoint(L.latLng(d.lat, (d.lon + 360))).x;
+      //   context.beginPath();
+      //   context.fillStyle = colorMap(d.tfh);
+      //   context.rect(extX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+      //   context.fill();
+      //   context.closePath();
+      // } else if (d.lon > (180 - extendWest)) { // extending towards the east
+      //   const extX = that.map.latLngToLayerPoint(L.latLng(d.lat, (-360 + d.lon))).x;
+      //   context.beginPath();
+      //   context.fillStyle = colorMap(d.tfh);
+      //   context.rect(extX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+      //   context.fill();
+      //   context.closePath();
+      // }
     }
 
     function clearContext() {
@@ -214,7 +266,24 @@ export class ExplorationComponent implements OnInit {
     return size
   }
 
+  mousemove(event: any, d: any) {
+    console.log(d);
+      // const c_val = this.getDataVal(d, country_data, this.choroProperty) ?? 0;
+      // const b_val = this.getDataVal(d, country_data, this.bubbleProperty) ?? 0;
+      // this.tooltip
+      //   .html(d.properties.NAME + '<br>'
+      //     + this.betterNames(this.choroProperty) + ': ' + Math.round(c_val * 100) / 100 + '<br>'
+      //     + this.betterNames(this.bubbleProperty) + ': ' + Math.round(b_val * 100) / 100)
+      //   .style('visibility', 'visible')
+      //   .style('left', (event.pageX + 5) + 'px')
+      //   .style('top', (event.pageY + 5) + 'px');
+    
+  }
 
+  mouseleave(d: any) {
+    this.tooltip
+      .style('visibility', 'hidden');
+  }
 }
 
 

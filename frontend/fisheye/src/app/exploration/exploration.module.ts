@@ -8,9 +8,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSliderModule } from '@angular/material/slider';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ExplorationComponent } from './exploration.component';
-
+import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input'
 const routes: Routes = [
-  { path: '', component: ExplorationComponent}
+  { path: '', component: ExplorationComponent }
 ]
 
 @NgModule({
@@ -24,6 +26,9 @@ const routes: Routes = [
     MatSliderModule,
     MatDatepickerModule,
     ReactiveFormsModule,
+    MatSelectModule,
+    MatAutocompleteModule,
+    MatInputModule,
   ]
 })
 export class ExplorationModule { }
