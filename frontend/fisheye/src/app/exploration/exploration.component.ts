@@ -7,10 +7,11 @@ import { MatSliderChange } from '@angular/material/slider';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ExplorationService } from '../service/exploration.service';
 import { Options } from '@angular-slider/ngx-slider';
-import {Observable} from 'rxjs';
-import {map, startWith} from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 
 import midData from '../../assets/json/midNew.json'
+import countryJson from '../../assets/json/countries.json'
 
 declare var renderQueue: any;
 
@@ -43,10 +44,10 @@ export class ExplorationComponent implements OnInit {
     start: new FormControl(),
     end: new FormControl(),
   });
-  
 
-  myControl = new FormControl();
-  options1:  Country[] = midData;
+
+  countryControl = new FormControl();
+  options1: Country[] = countryJson;
   filteredOptions!: Observable<Country[]>;
 
   sliderForm = new FormGroup({
@@ -63,14 +64,14 @@ export class ExplorationComponent implements OnInit {
 
   ngOnInit(): void {
     const that = this;
-    this.filteredOptions = this.myControl.valueChanges.pipe(
+    this.filteredOptions = this.countryControl.valueChanges.pipe(
       startWith(''),
       map(value => (typeof value === 'string' ? value : value.name)),
       map(name => (name ? this._filter(name) : this.options1.slice())),
     );
 
-    const mapOptions = { 
-      worldCopyJump: true, 
+    const mapOptions = {
+      worldCopyJump: true,
       // preferCanvas: true 
     };
     this.map = L.map('map', mapOptions).setView([18, 0], 2.5); // defaults to world view 
@@ -96,18 +97,18 @@ export class ExplorationComponent implements OnInit {
     this.es.setContext(this.context);
 
     this.tooltip = d3.select('#tooltip')
-        .attr("class", "leaflet-interactive")
-        .style('visibility', 'hidden')
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px")
-        .style('z-index', 1000000);
+      .attr("class", "leaflet-interactive")
+      .style('visibility', 'hidden')
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "5px")
+      .style("padding", "10px")
+      .style('z-index', 1000000);
 
-    this.canvas
-      .on("pointermove", function (event: any, d: any) { that.mousemove(event, d) })
-      .on("pointerout", function (event: any, d: any) { that.mouseleave(d) });
+    // this.canvas
+    //   .on("pointermove", function (event: any, d: any) { that.mousemove(event, d) })
+    //   .on("pointerout", function (event: any, d: any) { that.mouseleave(d) });
 
     const start = "2020-03-01";
     const end = "2020-03-05";
@@ -116,6 +117,7 @@ export class ExplorationComponent implements OnInit {
     this.es.setInterval(this.dateRangeToInterval(new Date(start), new Date(end)));
     this.sliderVal = this.dateToVal(new Date(start));
     this.range.setValue({ start: start, end: end });
+    this.countryControl.setValue('World')
 
   }
 
@@ -136,7 +138,10 @@ export class ExplorationComponent implements OnInit {
     this.map = this.es.getMap();
     const context = this.es.getContext()
     const canvas = this.es.getCanvas()
-    this.ds.getDateRangeVal(start, end).subscribe(data => {
+    const country = this.countryControl.value
+    console.log(country);
+    this.ds.getDateRangeVal(start, end, country).subscribe(data => {
+      clearContext();
       this.r_data = data;
       this.es.setData(this.r_data);
       this.loaded = true;
@@ -157,13 +162,14 @@ export class ExplorationComponent implements OnInit {
       const newY = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
       context.beginPath();
       context.fillStyle = colorMap(d.tfh);
-      if (d.lon < 0) {
-        newX = that.map.latLngToLayerPoint(L.latLng(d.lat, (d.lon + 180))).x;
-        context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
-      } else {
-        newX = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-        context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
-      }
+      // if (d.lon < 0) {
+      //   newX = that.map.latLngToLayerPoint(L.latLng(d.lat, (d.lon + 180))).x;
+      //   context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
+      // } else {
+
+      // }
+      newX = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+      context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
       context.fill();
       context.closePath();
       // const extendWest = 60; // width extension in longitude
@@ -202,6 +208,9 @@ export class ExplorationComponent implements OnInit {
     this.sliderVal = this.dateToVal(start);
     this.intervalLength = this.dateRangeToInterval(start, end);
     this.getData(this.dateToStr(start), this.dateToStr(end));
+    const render = this.es.getRenderer()
+    const data = this.es.getData()
+    render(data);
 
   }
 
@@ -211,6 +220,14 @@ export class ExplorationComponent implements OnInit {
     const start = this.valToDate(this.sliderVal);
     const end = this.intervalToEndDate(start);
     this.range.setValue({ start: start, end: end });
+    this.getData(this.dateToStr(start), this.dateToStr(end));
+  }
+
+  onCountryChange(event: any) {
+    const start = new Date(Date.parse(this.range.value.start));
+    const end = new Date(Date.parse(this.range.value.end));
+    this.sliderVal = this.dateToVal(start);
+    this.intervalLength = this.dateRangeToInterval(start, end);
     this.getData(this.dateToStr(start), this.dateToStr(end));
   }
 
@@ -266,24 +283,24 @@ export class ExplorationComponent implements OnInit {
     return size
   }
 
-  mousemove(event: any, d: any) {
-    console.log(d);
-      // const c_val = this.getDataVal(d, country_data, this.choroProperty) ?? 0;
-      // const b_val = this.getDataVal(d, country_data, this.bubbleProperty) ?? 0;
-      // this.tooltip
-      //   .html(d.properties.NAME + '<br>'
-      //     + this.betterNames(this.choroProperty) + ': ' + Math.round(c_val * 100) / 100 + '<br>'
-      //     + this.betterNames(this.bubbleProperty) + ': ' + Math.round(b_val * 100) / 100)
-      //   .style('visibility', 'visible')
-      //   .style('left', (event.pageX + 5) + 'px')
-      //   .style('top', (event.pageY + 5) + 'px');
-    
-  }
+  // mousemove(event: any, d: any) {
+  //   console.log(d);
+  //   // const c_val = this.getDataVal(d, country_data, this.choroProperty) ?? 0;
+  //   // const b_val = this.getDataVal(d, country_data, this.bubbleProperty) ?? 0;
+  //   // this.tooltip
+  //   //   .html(d.properties.NAME + '<br>'
+  //   //     + this.betterNames(this.choroProperty) + ': ' + Math.round(c_val * 100) / 100 + '<br>'
+  //   //     + this.betterNames(this.bubbleProperty) + ': ' + Math.round(b_val * 100) / 100)
+  //   //   .style('visibility', 'visible')
+  //   //   .style('left', (event.pageX + 5) + 'px')
+  //   //   .style('top', (event.pageY + 5) + 'px');
 
-  mouseleave(d: any) {
-    this.tooltip
-      .style('visibility', 'hidden');
-  }
+  // }
+
+  // mouseleave(d: any) {
+  //   this.tooltip
+  //     .style('visibility', 'hidden');
+  // }
 }
 
 

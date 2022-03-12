@@ -29,6 +29,10 @@ export interface dtmp {
 }
 
 export interface Country {
-    value: string;
-    viewValue: string;
+    viewValue: string,
+}
+
+export interface Mid {
+    viewValue: string,
+    mid: string;
 }
