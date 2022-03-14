@@ -84,11 +84,17 @@ export class ComparisonComponent implements OnInit {
     );
     // Initialize all the maps
     this.navigation = L.map('navigation').setView([18, 0], 2.5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   minZoom: 2,
+    //   maxZoom: 10,
+    //   attribution:
+    //     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // })
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
       minZoom: 2,
       maxZoom: 10,
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
     }).addTo(this.navigation);
     const mapOptions = { dragging: false, zoomControl: false, scrollWheelZoom: false, attributionControl: false}
     this.map1 = L.map('map1', mapOptions).setView([18, 0], 2.5);
@@ -178,7 +184,8 @@ export class ComparisonComponent implements OnInit {
 
   initMap(num: number) {
     const map = <L.Map>this.cs.getMap(num);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
+    // 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {}).addTo(map);
     L.canvas().addTo(map);
     const canvas: any = d3.select(map.getPanes().overlayPane).select('canvas');
     const context = canvas.node().getContext('2d');
