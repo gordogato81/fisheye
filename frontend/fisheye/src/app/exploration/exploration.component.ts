@@ -10,8 +10,7 @@ import { Options } from '@angular-slider/ngx-slider';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
-import midData from '../../assets/json/midNew.json'
-import countryJson from '../../assets/json/countries.json'
+import countryJson from '../../assets/json/countries.json';
 
 declare var renderQueue: any;
 
@@ -72,15 +71,22 @@ export class ExplorationComponent implements OnInit {
 
     const mapOptions = {
       worldCopyJump: true,
+      // crs: L.CRS.EPSG3395
       // preferCanvas: true 
     };
     this.map = L.map('map', mapOptions).setView([18, 0], 2.5); // defaults to world view 
 
-    const tilelayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // const tilelayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   minZoom: 2,
+    //   maxZoom: 10,
+    //   attribution:
+    //     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // });
+    const tilelayer = L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
       minZoom: 2,
       maxZoom: 10,
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
     });
 
     tilelayer.addTo(this.map);
@@ -119,11 +125,6 @@ export class ExplorationComponent implements OnInit {
     this.range.setValue({ start: start, end: end });
     this.countryControl.setValue('World')
 
-  }
-
-
-  displayFn(country: Country): string {
-    return country && country.viewValue ? country.viewValue : '';
   }
 
   private _filter(name: string): Country[] {
@@ -195,6 +196,7 @@ export class ExplorationComponent implements OnInit {
     }
 
     function update() {
+      console.log(that.map.getZoom());
       if (that.loaded) {
         that.render(that.r_data);
       }
@@ -263,12 +265,25 @@ export class ExplorationComponent implements OnInit {
     this.map = this.es.getMap();
     const lat: number = parseFloat(d.lat);
     const lon: number = parseFloat(d.lon);
+    const zoom = this.map.getZoom();
     let first, second;
-    if (this.map.getZoom() <= 6) {
+    if (zoom == 2) {
       first = L.latLng(lat - 0.01, lon); // -0.01 Removes horizontal streak artifact
       second = L.latLng(lat + 0.1, lon + 0.1);
-    } else if (this.map.getZoom() == 7, 8) {
+    } else if (zoom == 3) {
+      first = L.latLng(lat - 0.03, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 4) {
+      first = L.latLng(lat - 0.025, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 5) {
+      first = L.latLng(lat - 0.017, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 6) {
       first = L.latLng(lat - 0.005, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 7) {
+      first = L.latLng(lat - 0.002, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else {
       first = L.latLng(lat, lon); // -0.01 Removes horizontal streak artifact

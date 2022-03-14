@@ -9,6 +9,10 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatButtonModule } from '@angular/material/button';
+import {MatDividerModule} from '@angular/material/divider';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
+
 @NgModule({
   declarations: [ComparisonComponent],
   imports: [
@@ -20,7 +24,10 @@ import { MatButtonModule } from '@angular/material/button';
     MatSliderModule,
     MatDatepickerModule,
     ReactiveFormsModule,
-    MatButtonModule
+    MatButtonModule,
+    MatDividerModule,
+    MatAutocompleteModule,
+    MatInputModule
   ]
 })
 export class ComparisonModule { }

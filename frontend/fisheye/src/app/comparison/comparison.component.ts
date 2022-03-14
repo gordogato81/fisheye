@@ -3,9 +3,12 @@ import { APIService } from '../service/api.service';
 import { FormControl, FormGroup } from '@angular/forms';
 import * as L from 'leaflet'
 import * as d3 from 'd3';
-import { tmp } from '../interfaces';
+import { Country, tmp } from '../interfaces';
 import { ComparisonService } from '../service/comparison.service';
 import { range } from 'd3';
+
+import countryJson from '../../assets/json/countries.json';
+import { map, Observable, startWith } from 'rxjs';
 
 declare var renderQueue: any;
 
@@ -44,7 +47,41 @@ export class ComparisonComponent implements OnInit {
     end: new FormControl(),
   });
 
+  countryControl1 = new FormControl();
+  options1: Country[] = countryJson;
+  filteredOptions1!: Observable<Country[]>;
+  countryControl2 = new FormControl();
+  options2: Country[] = countryJson;
+  filteredOptions2!: Observable<Country[]>;
+  countryControl3 = new FormControl();
+  options3: Country[] = countryJson;
+  filteredOptions3!: Observable<Country[]>;
+  countryControl4 = new FormControl();
+  options4: Country[] = countryJson;
+  filteredOptions4!: Observable<Country[]>;
+
   ngOnInit(): void {
+
+    this.filteredOptions1 = this.countryControl1.valueChanges.pipe(
+      startWith(''),
+      map(value => (typeof value === 'string' ? value : value.name)),
+      map(name => (name ? this._filter(name) : this.options1.slice())),
+    );
+    this.filteredOptions2 = this.countryControl2.valueChanges.pipe(
+      startWith(''),
+      map(value => (typeof value === 'string' ? value : value.name)),
+      map(name => (name ? this._filter(name) : this.options1.slice())),
+    );
+    this.filteredOptions3 = this.countryControl3.valueChanges.pipe(
+      startWith(''),
+      map(value => (typeof value === 'string' ? value : value.name)),
+      map(name => (name ? this._filter(name) : this.options1.slice())),
+    );
+    this.filteredOptions4 = this.countryControl4.valueChanges.pipe(
+      startWith(''),
+      map(value => (typeof value === 'string' ? value : value.name)),
+      map(name => (name ? this._filter(name) : this.options1.slice())),
+    );
     // Initialize all the maps
     this.navigation = L.map('navigation').setView([18, 0], 2.5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -92,6 +129,18 @@ export class ComparisonComponent implements OnInit {
       this.cs.setCenter(this.navigation.getCenter());
       this.cs.setZoom(this.navigation.getZoom());
     })
+
+    
+  }
+
+  private _filter(name: string): Country[] {
+    const filterValue = name.toLowerCase();
+
+    return this.options1.filter(option => option.viewValue.toLowerCase().includes(filterValue));
+  }
+
+  test(){
+    alert("hsjfgsjehfgsdjhfg")
   }
 
   clickUpdate() {
@@ -101,16 +150,15 @@ export class ComparisonComponent implements OnInit {
     const map4 = <L.Map>this.cs.getMap(4);
     const zoom = this.cs.getZoom()
     const center = this.cs.getCenter();
+    map1.setView(center, zoom, { animate: true });
+    map2.setView(center, zoom, { animate: true });
+    map3.setView(center, zoom, { animate: true });
+    map4.setView(center, zoom, { animate: true });
     const bounds = map1.getBounds();
     this.bl[0] = bounds.getSouth();
     this.bl[1] = bounds.getWest();
     this.tr[0] = bounds.getNorth();
     this.tr[1] = bounds.getEast();
-    map1.setView(center, zoom, { animate: true });
-    map2.setView(center, zoom, { animate: true });
-    map3.setView(center, zoom, { animate: true });
-    map4.setView(center, zoom, { animate: true });
-
     console.log(this.bl, this.tr);
 
     const start1 = new Date(Date.parse(this.range1.value.start));
@@ -138,52 +186,52 @@ export class ComparisonComponent implements OnInit {
     this.cs.setContext(context, num);
   }
 
-  onDateChange(event: any, id: number) {
-    const map = <L.Map>this.cs.getMap(1);
-    const bounds = map.getBounds();
-    this.bl[0] = bounds.getSouth();
-    this.bl[1] = bounds.getWest();
-    this.tr[0] = bounds.getNorth();
-    this.tr[1] = bounds.getEast();
-    const render1 = this.cs.getRenderer(1);
-    const render2 = this.cs.getRenderer(2);
-    const render3 = this.cs.getRenderer(3);
-    const render4 = this.cs.getRenderer(4);
-    const data1 = this.cs.getData(1);
-    const data2 = this.cs.getData(2);
-    const data3 = this.cs.getData(3);
-    const data4 = this.cs.getData(4);
-    if (id == 1) {
-      const start1 = new Date(Date.parse(this.range1.value.start));
-      const end1 = new Date(Date.parse(this.range1.value.end));
-      this.getData1(this.dateToStr(start1), this.dateToStr(end1), this.bl, this.tr);
-      render2(data2);
-      render3(data3);
-      render4(data4);
-    } else if (id == 2) {
-      const start2 = new Date(Date.parse(this.range2.value.start));
-      const end2 = new Date(Date.parse(this.range2.value.end));
-      this.getData2(this.dateToStr(start2), this.dateToStr(end2), this.bl, this.tr);
-      render1(data1);
-      render3(data3);
-      render4(data4);
-    } else if (id == 3) {
-      const start3 = new Date(Date.parse(this.range3.value.start));
-      const end3 = new Date(Date.parse(this.range3.value.end));
-      this.getData3(this.dateToStr(start3), this.dateToStr(end3), this.bl, this.tr);
-      render1(data1);
-      render2(data2);
-      render4(data4);
-    } else if (id == 4) {
-      const start4 = new Date(Date.parse(this.range4.value.start));
-      const end4 = new Date(Date.parse(this.range4.value.end));
-      this.getData4(this.dateToStr(start4), this.dateToStr(end4), this.bl, this.tr);
-      render1(data1);
-      render2(data2);
-      render3(data3);
+  // onDateChange(event: any, id: number) {
+  //   const map = <L.Map>this.cs.getMap(1);
+  //   const bounds = map.getBounds();
+  //   this.bl[0] = bounds.getSouth();
+  //   this.bl[1] = bounds.getWest();
+  //   this.tr[0] = bounds.getNorth();
+  //   this.tr[1] = bounds.getEast();
+  //   const render1 = this.cs.getRenderer(1);
+  //   const render2 = this.cs.getRenderer(2);
+  //   const render3 = this.cs.getRenderer(3);
+  //   const render4 = this.cs.getRenderer(4);
+  //   const data1 = this.cs.getData(1);
+  //   const data2 = this.cs.getData(2);
+  //   const data3 = this.cs.getData(3);
+  //   const data4 = this.cs.getData(4);
+  //   if (id == 1) {
+  //     const start1 = new Date(Date.parse(this.range1.value.start));
+  //     const end1 = new Date(Date.parse(this.range1.value.end));
+  //     this.getData1(this.dateToStr(start1), this.dateToStr(end1), this.bl, this.tr);
+  //     render2(data2);
+  //     render3(data3);
+  //     render4(data4);
+  //   } else if (id == 2) {
+  //     const start2 = new Date(Date.parse(this.range2.value.start));
+  //     const end2 = new Date(Date.parse(this.range2.value.end));
+  //     this.getData2(this.dateToStr(start2), this.dateToStr(end2), this.bl, this.tr);
+  //     render1(data1);
+  //     render3(data3);
+  //     render4(data4);
+  //   } else if (id == 3) {
+  //     const start3 = new Date(Date.parse(this.range3.value.start));
+  //     const end3 = new Date(Date.parse(this.range3.value.end));
+  //     this.getData3(this.dateToStr(start3), this.dateToStr(end3), this.bl, this.tr);
+  //     render1(data1);
+  //     render2(data2);
+  //     render4(data4);
+  //   } else if (id == 4) {
+  //     const start4 = new Date(Date.parse(this.range4.value.start));
+  //     const end4 = new Date(Date.parse(this.range4.value.end));
+  //     this.getData4(this.dateToStr(start4), this.dateToStr(end4), this.bl, this.tr);
+  //     render1(data1);
+  //     render2(data2);
+  //     render3(data3);
 
-    }
-  }
+  //   }
+  // }
 
   getData1(start: string, end: string, bl: [number, number], tr: [number, number]) {
     const that = this;
@@ -192,7 +240,8 @@ export class ComparisonComponent implements OnInit {
     const map = <L.Map>this.cs.getMap(id);
     const context = this.cs.getContext(id);
     const canvas = this.cs.getCanvas(id);
-    this.ds.getLcV(start, end, bl, tr).subscribe(data => {
+    const country = this.countryControl1.value
+    this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
       this.cs.setData(data, id);
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
@@ -229,7 +278,8 @@ export class ComparisonComponent implements OnInit {
     const map = <L.Map>this.cs.getMap(id);
     const context = this.cs.getContext(id);
     const canvas = this.cs.getCanvas(id);
-    this.ds.getLcV(start, end, bl, tr).subscribe(data => {
+    const country = this.countryControl2.value;
+    this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
       this.cs.setData(data, id);
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
@@ -267,7 +317,8 @@ export class ComparisonComponent implements OnInit {
     const map = <L.Map>this.cs.getMap(id);
     const context = this.cs.getContext(id);
     const canvas = this.cs.getCanvas(id);
-    this.ds.getLcV(start, end, bl, tr).subscribe(data => {
+    const country = this.countryControl3.value;
+    this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
       this.cs.setData(data, id);
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
@@ -306,7 +357,8 @@ export class ComparisonComponent implements OnInit {
     const map = <L.Map>this.cs.getMap(id);
     const context = this.cs.getContext(id);
     const canvas = this.cs.getCanvas(id);
-    this.ds.getLcV(start, end, bl, tr).subscribe(data => {
+    const country = this.countryControl4.value;
+    this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
       this.cs.setData(data, id);
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
@@ -337,18 +389,55 @@ export class ComparisonComponent implements OnInit {
     });
   }
 
+  // detSize(d: any, map: any) {
+  //   const lat: number = parseFloat(d.lat);
+  //   const lon: number = parseFloat(d.lon);
+  //   const first = L.latLng(lat - 0.01, lon); // -0.01 Removes horizontal streak artifact
+  //   const second = L.latLng(lat + 0.1, lon + 0.1);
+  //   let diffX = Math.abs(map.latLngToContainerPoint(first).x - map.latLngToContainerPoint(second).x)
+  //   let diffY = Math.abs(map.latLngToContainerPoint(first).y - map.latLngToContainerPoint(second).y)
+  //   diffX = diffX < 1 ? 1 : diffX;
+  //   diffY = diffY < 1 ? 1 : diffY;
+  //   const size: [number, number] = [diffX, diffY];
+  //   return size
+  // }
+
   detSize(d: any, map: any) {
     const lat: number = parseFloat(d.lat);
     const lon: number = parseFloat(d.lon);
-    const first = L.latLng(lat - 0.01, lon); // -0.01 Removes horizontal streak artifact
-    const second = L.latLng(lat + 0.1, lon + 0.1);
-    let diffX = Math.abs(map.latLngToContainerPoint(first).x - map.latLngToContainerPoint(second).x)
-    let diffY = Math.abs(map.latLngToContainerPoint(first).y - map.latLngToContainerPoint(second).y)
+    const zoom = map.getZoom();
+    let first, second;
+    if (zoom == 2) {
+      first = L.latLng(lat - 0.01, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 3) {
+      first = L.latLng(lat - 0.03, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 4) {
+      first = L.latLng(lat - 0.025, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 5) {
+      first = L.latLng(lat - 0.017, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 6) {
+      first = L.latLng(lat - 0.005, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else if (zoom == 7) {
+      first = L.latLng(lat - 0.002, lon);
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    } else {
+      first = L.latLng(lat, lon); // -0.01 Removes horizontal streak artifact
+      second = L.latLng(lat + 0.1, lon + 0.1);
+    }
+
+    let diffX = Math.abs(map.latLngToContainerPoint(first).x - map.latLngToContainerPoint(second).x);
+    let diffY = Math.abs(map.latLngToContainerPoint(first).y - map.latLngToContainerPoint(second).y);
     diffX = diffX < 1 ? 1 : diffX;
     diffY = diffY < 1 ? 1 : diffY;
     const size: [number, number] = [diffX, diffY];
     return size
   }
+
 
   dateToStr(d: Date) {
     return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)

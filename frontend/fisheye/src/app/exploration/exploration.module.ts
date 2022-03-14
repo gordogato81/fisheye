@@ -10,7 +10,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ExplorationComponent } from './exploration.component';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatInputModule } from '@angular/material/input'
+import { MatInputModule } from '@angular/material/input';
+
 const routes: Routes = [
   { path: '', component: ExplorationComponent }
 ]
