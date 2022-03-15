@@ -227,7 +227,7 @@ def getChartData():
     bl = [0, 0]  # lat lng
     tr = [0.1, 0.1]  # lat lng
     start = request.args.get("start", "2020-01-01", type=str)
-    end = request.args.get("end", "2020-01-31", type=str)
+    end = request.args.get("end", "2020-12-31", type=str)
     bl[0] = request.args.get("bl[0]", 0, type=float)
     bl[1] = request.args.get("bl[1]", 0, type=float)
     tr[0] = request.args.get("tr[0]", 10, type=float)

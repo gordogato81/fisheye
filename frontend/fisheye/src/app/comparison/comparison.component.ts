@@ -145,10 +145,6 @@ export class ComparisonComponent implements OnInit {
     return this.options1.filter(option => option.viewValue.toLowerCase().includes(filterValue));
   }
 
-  test(){
-    alert("hsjfgsjehfgsdjhfg")
-  }
-
   clickUpdate() {
     const map1 = <L.Map>this.cs.getMap(1);
     const map2 = <L.Map>this.cs.getMap(2);

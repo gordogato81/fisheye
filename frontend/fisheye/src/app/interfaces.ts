@@ -16,10 +16,14 @@ export interface fSpat {
     };
 }
 
-
 export interface tmp {
     lat: number,
     lon: number,
+    tfh: number
+}
+
+export interface cData {
+    date: Date,
     tfh: number
 }
 
