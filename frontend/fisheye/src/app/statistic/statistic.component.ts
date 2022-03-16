@@ -7,6 +7,7 @@ import * as d3 from 'd3'
 
 import countryJson from '../../assets/json/countries.json';
 import { Country, cData } from '../interfaces';
+import { StatisticService } from '../service/statistic.service';
 @Component({
   selector: 'app-statistic',
   templateUrl: './statistic.component.html',
@@ -14,7 +15,7 @@ import { Country, cData } from '../interfaces';
 })
 export class StatisticComponent implements OnInit {
 
-  constructor(private ds: APIService) { }
+  constructor(private ds: APIService, private stService: StatisticService) { }
 
   private navigation!: L.Map;
   countryControl = new FormControl();
@@ -26,7 +27,7 @@ export class StatisticComponent implements OnInit {
   });
   minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
-
+  worldChecked = true;
   ngOnInit(): void {
     this.filteredOptions = this.countryControl.valueChanges.pipe(
       startWith(''),
@@ -48,21 +49,41 @@ export class StatisticComponent implements OnInit {
         '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
     }).addTo(this.navigation);
 
+    this.navigation.on('moveend zoomend', () => {
+      // this.stService.setMap(this.navigation);
+      const bounds = document.querySelector("#border")!.getBoundingClientRect();
+      const bl = this.navigation.layerPointToLatLng(L.point(bounds.left, bounds.bottom));
+      const tr = this.navigation.layerPointToLatLng(L.point(bounds.right, bounds.top));
+      this.stService.setBlTr([bl.lat, bl.lng], [tr.lat, tr.lng]);
+    });
+
     const start = '2020-01-01';
     const end = '2020-12-31';
     this.range1.setValue({ start: start, end: end });
     this.countryControl.setValue('World');
-    this.fillChart();
+    this.callChart();
   }
-  fillChart() {
+  callChart() {
     const country = this.countryControl.value;
     const start = new Date(Date.parse(this.range1.value.start));
     const end = new Date(Date.parse(this.range1.value.end));
-    this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country).subscribe(data => {
-      const startDate = new Date(data[0].date);
-      const endDate = new Date(data[data.length - 1].date);
+    // const navMap = this.stService.getMap();
+    // // console.log(navMap.getBounds());
+    if (this.worldChecked) {
+      this.fillChart(start, end, country);
+    } else {
+      const bl = this.stService.getBl();
+      const tr = this.stService.getTr();
+      this.fillChart(start, end, country, bl, tr);
+    }
+  }
+
+  fillChart(start: Date, end: Date, country: string, bl?: [number, number], tr?: [number, number]) {
+    this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country, bl, tr).subscribe(data => {
+      // const startDate = new Date(data[0].date);
+      // const endDate = new Date(data[data.length - 1].date);
       //let getValues = data.map(d => d.date);
-      let tDomain: [Date, Date] = [startDate, endDate]; //d3.extent(data.map(d => d.date));
+      let tDomain: [Date, Date] = [start, end]; //d3.extent(data.map(d => d.date));
       console.log()
       //console.log(domain);
       let margin = { top: 30, right: 30, bottom: 30, left: 60 },
@@ -78,7 +99,7 @@ export class StatisticComponent implements OnInit {
           "translate(" + margin.left + "," + margin.top + ")");
 
       let xScale = d3.scaleTime()
-        .domain([startDate, endDate])
+        .domain([start, end])
         .range([0, width]);
       svg.append("g")
         .attr("transform", "translate(0," + height + ")")
@@ -101,7 +122,6 @@ export class StatisticComponent implements OnInit {
         .attr("stroke-width", 1.5)
         .attr("d", line)
     })
-
   }
   dateToStr(d: Date) {
     return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
@@ -110,7 +130,7 @@ export class StatisticComponent implements OnInit {
 
   clickUpdate() {
     //alert("Hi there, we have been trying to reach you about your car's extended warranty. Please call us back at +491723304303")
-    this.fillChart()
+    this.callChart()
   }
   private _filter(name: string): Country[] {
     const filterValue = name.toLowerCase();

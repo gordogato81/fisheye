@@ -20,6 +20,9 @@
                 <mat-error *ngIf="range1.controls['start'].hasError('matStartDateInvalid')">Invalid start date</mat-error>
                 <mat-error *ngIf="range1.controls['end'].hasError('matEndDateInvalid')">Invalid end date</mat-error>
               </mat-form-field>
+
+              <mat-checkbox class="worldChecked" [(ngModel)]="worldChecked">Select entire world</mat-checkbox>
+
               <mat-form-field  appearance="fill">
                 <mat-label>Select Country</mat-label>
                 <input type="text" matInput [formControl]="countryControl" [matAutocomplete]="auto1" placeholder="World">
