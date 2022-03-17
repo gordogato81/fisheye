@@ -11,6 +11,8 @@ export class ComparisonService {
   navigation!: L.Map;
   center: any;
   zoom: any;
+  bl: [number, number] = [0, 0]
+  tr: [number, number] = [0, 0]
   map1!: L.Map;
   map2!: L.Map;
   map3!: L.Map;
@@ -234,5 +236,18 @@ export class ComparisonService {
       return this.max4;
     }
     return undefined;
+  }
+
+  public setBlTr(bl: [number, number], tr: [number, number]) {
+    this.bl = bl;
+    this.tr = tr;
+  }
+
+  public getBl() {
+    return this.bl;
+  }
+
+  public getTr() {
+    return this.tr;
   }
 }

@@ -15,10 +15,8 @@ export class APIService {
   public getDateRangeVal(start?: string, stop?: string, country?: string): Observable<tmp[]> {
     if (start != undefined || stop != undefined) {
       country = country ?? 'World';
-      console.log('api: ', country)
       let mids = this.getMid(country);
       let groups = this.getGroups(mids);
-      console.log(groups);
       let batchNum = 0;
       if (!(groups.batch1.length == 0)) batchNum += 1;
       if (!(groups.batch2.length == 0)) batchNum += 1;
@@ -51,10 +49,8 @@ export class APIService {
   public getLcV(start?: string, stop?: string, bl?: [number, number], tr?: [number, number], country?: string): Observable<tmp[]> {
     if (start != undefined && stop != undefined && bl != undefined && tr != undefined) {
       country = country ?? 'World';
-      console.log('api: ', country)
       let mids = this.getMid(country);
       let groups = this.getGroups(mids);
-      console.log(groups);
       let batchNum = 0;
       if (!(groups.batch1.length == 0)) batchNum += 1;
       if (!(groups.batch2.length == 0)) batchNum += 1;
@@ -136,10 +132,8 @@ export class APIService {
         + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1]);
     } else if (start != undefined || stop != undefined) {
       country = country ?? 'World';
-      console.log('api: ', country)
       let mids = this.getMid(country);
       let groups = this.getGroups(mids);
-      console.log(groups);
       let batchNum = 0;
       if (!(groups.batch1.length == 0)) batchNum += 1;
       if (!(groups.batch2.length == 0)) batchNum += 1;

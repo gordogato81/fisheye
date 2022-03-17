@@ -54,6 +54,10 @@ export class StatisticComponent implements OnInit {
       const bounds = document.querySelector("#border")!.getBoundingClientRect();
       const bl = this.navigation.layerPointToLatLng(L.point(bounds.left, bounds.bottom));
       const tr = this.navigation.layerPointToLatLng(L.point(bounds.right, bounds.top));
+      const navBounds = this.navigation.getBounds();
+      bl.lng = navBounds.getWest();
+      tr.lng = navBounds.getEast();
+      console.log(bl, tr)
       this.stService.setBlTr([bl.lat, bl.lng], [tr.lat, tr.lng]);
     });
 

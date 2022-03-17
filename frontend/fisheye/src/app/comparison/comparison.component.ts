@@ -94,9 +94,9 @@ export class ComparisonComponent implements OnInit {
       minZoom: 2,
       maxZoom: 10,
       attribution:
-      '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+        '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
     }).addTo(this.navigation);
-    const mapOptions = { dragging: false, zoomControl: false, scrollWheelZoom: false, attributionControl: false}
+    const mapOptions = { dragging: false, zoomControl: false, scrollWheelZoom: false, attributionControl: false }
     this.map1 = L.map('map1', mapOptions).setView([18, 0], 2.5);
     this.map2 = L.map('map2', mapOptions).setView([18, 0], 2.5);
     this.map3 = L.map('map3', mapOptions).setView([18, 0], 2.5);
@@ -132,11 +132,28 @@ export class ComparisonComponent implements OnInit {
     // const button = <HTMLButtonElement>document.getElementById('updateButton');
     // button.click()
     this.navigation.on('moveend zoomend', () => {
+      console.log("Pixel Origin: ",this.navigation.getPixelOrigin())
+      const bounds = document.querySelector("#compBorder")!.getBoundingClientRect();
+      const bl1 = L.point(bounds.left, bounds.bottom)
+      const tr1 = L.point(bounds.right, bounds.top)
+      const bl = this.navigation.layerPointToLatLng(bl1);
+      const tr = this.navigation.layerPointToLatLng(tr1);
+      const navBounds = this.navigation.getBounds();
+      bl.lng = navBounds.getWest();
+      tr.lng = navBounds.getEast();
+      bl.lat = navBounds.getSouth();
+      tr.lat = navBounds.getNorth();
+      this.cs.setBlTr([bl.lat, bl.lng], [tr.lat, tr.lng]);
       this.cs.setCenter(this.navigation.getCenter());
       this.cs.setZoom(this.navigation.getZoom());
     })
+    // const para = document.getElementById('con')!;
 
-    
+    // para.addEventListener('mousemove', (event) => {
+    //   console.log(event.pageX, event.pageY);
+    // });
+
+
   }
 
   private _filter(name: string): Country[] {
@@ -156,13 +173,15 @@ export class ComparisonComponent implements OnInit {
     map2.setView(center, zoom, { animate: true });
     map3.setView(center, zoom, { animate: true });
     map4.setView(center, zoom, { animate: true });
-    const bounds = map1.getBounds();
-    this.bl[0] = bounds.getSouth();
-    this.bl[1] = bounds.getWest();
-    this.tr[0] = bounds.getNorth();
-    this.tr[1] = bounds.getEast();
-    console.log(this.bl, this.tr);
+    // const bounds = map1.getBounds();
+    // this.bl[0] = bounds.getSouth();
+    // this.bl[1] = bounds.getWest();
+    // this.tr[0] = bounds.getNorth();
+    // this.tr[1] = bounds.getEast();
 
+    this.bl = this.cs.getBl();
+    this.tr = this.cs.getTr();
+    console.log(this.bl, this.tr);
     const start1 = new Date(Date.parse(this.range1.value.start));
     const end1 = new Date(Date.parse(this.range1.value.end));
     this.getData1(this.dateToStr(start1), this.dateToStr(end1), this.bl, this.tr);

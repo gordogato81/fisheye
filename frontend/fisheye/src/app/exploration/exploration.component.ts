@@ -1,3 +1,4 @@
+//todo: drop all rows with fishing hours = 0 (64% data reduction)
 import { Component, OnInit } from '@angular/core';
 import { APIService } from '../service/api.service';
 import * as L from 'leaflet';
@@ -28,12 +29,15 @@ export class ExplorationComponent implements OnInit {
   private map!: L.Map;
   private canvas: any;
   private r_data: any;
-  private dMax: any;
+  private dMax: number = 2439.9774;
   private render: any;
   private loaded: boolean = false;
   private context: any;
   private tooltip: any;
+  private legend: any;
   private intervalLength: number = 5;
+  private min_color = 'orange';
+  private max_color = 'purple';
   sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) };
   sliderMax: number = 1461; //3288 = 2012 - 2020
   sliderVal: number = 1;
@@ -86,14 +90,14 @@ export class ExplorationComponent implements OnInit {
       minZoom: 2,
       maxZoom: 10,
       attribution:
-      '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+        '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
     });
-
+    this.map.attributionControl.setPosition('bottomleft');
     tilelayer.addTo(this.map);
     L.canvas().addTo(this.map);
     const bl = L.latLng(-90, -240);
-    const tr = L.latLng(90, 240)
-    this.map.setMaxBounds(L.latLngBounds(bl, tr))
+    const tr = L.latLng(90, 240);
+    this.map.setMaxBounds(L.latLngBounds(bl, tr));
     this.es.setMap(this.map);
 
     this.canvas = d3.select(this.map.getPanes().overlayPane).select('canvas');
@@ -111,6 +115,15 @@ export class ExplorationComponent implements OnInit {
       .style("border-radius", "5px")
       .style("padding", "10px")
       .style('z-index', 1000000);
+    this.legend = d3.select('#legend')
+      // d3.select('.leaflet-control-container')
+      // .select(".leaflet-bottom.leaflet-right")
+      // .append('svg')
+      .attr('height', 400)
+      .attr('width', 100)
+    // .attr('bottom', 0)
+    // .attr('right', 0)
+    // .attr('id', 'clegend');
 
     // this.canvas
     //   .on("pointermove", function (event: any, d: any) { that.mousemove(event, d) })
@@ -135,12 +148,12 @@ export class ExplorationComponent implements OnInit {
 
   private getData(start: string, end: string) {
     const that = this;
-    this.dMax = this.es.getDMax();
+
     this.map = this.es.getMap();
-    const context = this.es.getContext()
-    const canvas = this.es.getCanvas()
-    const country = this.countryControl.value
-    console.log(country);
+    const context = this.es.getContext();
+    const canvas = this.es.getCanvas();
+    const country = this.countryControl.value;
+
     this.ds.getDateRangeVal(start, end, country).subscribe(data => {
       clearContext();
       this.r_data = data;
@@ -152,12 +165,50 @@ export class ExplorationComponent implements OnInit {
       this.dMax = d3.max(this.r_data, (d: any) => +d.tfh) ?? 0;
       this.es.setDMax(this.dMax);
       this.render(this.r_data);
+
+      if (!this.legend.selectAll('rect').empty()) this.legend.selectAll('rect').remove();
+      if (!this.legend.selectAll('g').empty()) this.legend.selectAll('g').remove();
+      const legendheight = 350;
+      const legendwidth = 15;
+
+      let colorScale = d3.scaleSymlog();
+      colorScale.domain([0, this.dMax]).range([0, legendheight])
+      const coloraxis = d3.axisLeft(colorScale).ticks(5);
+      this.legend.append("defs")
+        .append('linearGradient')
+        .attr("id", "gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%") // horizontal gradient
+        .attr("y2", "100%") // vertical gradient
+        .selectAll('stop')
+        .data([{ offset: "0%", color: this.min_color },
+        { offset: "100%", color: this.max_color }])
+        .join("stop")
+        .attr("offset", (d: any) => d.offset)
+        .attr("stop-color", (d: any) => d.color)
+
+      const rect = this.legend
+        .append("rect")
+        .attr("x", 80)
+        .attr("y", 30)
+        .attr("width", legendwidth)
+        .attr("height", legendheight)
+        .style("fill", "url(#gradient)")
+      // .style('opacity', 0.9);
+
+      this.legend.append('g')
+        .attr("class", "x axis")
+        .attr("transform", "translate(80, 30)")
+        .call(coloraxis);
     });
 
     this.map.on('moveend zoomend', update);
 
+
+
     function draw(d: tmp) {
-      let colorMap = d3.scaleSymlog<string, number>()
+      let colorMap = d3.scaleSymlog<string, number>();
       colorMap.domain([0, that.dMax]).range(["orange", "purple"])
       let newX;
       const newY = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
@@ -196,7 +247,8 @@ export class ExplorationComponent implements OnInit {
     }
 
     function update() {
-      console.log(that.map.getZoom());
+      // console.log(that.map.getZoom());
+      console.log(that.dMax)
       if (that.loaded) {
         that.render(that.r_data);
       }

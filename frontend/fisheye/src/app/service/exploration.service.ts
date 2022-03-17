@@ -11,7 +11,7 @@ export class ExplorationService {
   map!: L.Map;
   canvas: any;
   context: any;
-  dMax: number = 0;
+  dMax: number = 2439.9774;
   renderer: any;
   data: any;
   interval: number = 0;
