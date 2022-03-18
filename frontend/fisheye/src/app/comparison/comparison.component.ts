@@ -28,6 +28,9 @@ export class ComparisonComponent implements OnInit {
   private bl: [number, number] = [0, 0];
   private tr: [number, number] = [10, 10];
   private totalFishingMax = 5486.0071;
+  private legend: any;
+  private min_color = 'orange';
+  private max_color = 'purple';
   minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
   range1 = new FormGroup({
@@ -129,20 +132,67 @@ export class ComparisonComponent implements OnInit {
     this.getData3('2020-07-01', '2020-09-30', this.bl, this.tr);
     this.getData4('2020-10-01', '2020-12-31', this.bl, this.tr);
 
+
+    this.legend = d3.select('#clegend')
+      .attr('height', 360)
+      .attr('width', 70);
+    // if (!this.legend.selectAll('rect').empty()) this.legend.selectAll('rect').remove();
+    // if (!this.legend.selectAll('g').empty()) this.legend.selectAll('g').remove();
+    const legendheight = 350;
+    const legendwidth = 15;
+
+    let colorScale = d3.scaleSymlog();
+    colorScale.domain([0, this.totalFishingMax]).range([0, legendheight])
+    const coloraxis = d3.axisLeft(colorScale).ticks(5);
+    this.legend.append("defs")
+      .append('linearGradient')
+      .attr("id", "gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "0%") // horizontal gradient
+      .attr("y2", "100%") // vertical gradient
+      .selectAll('stop')
+      .data([{ offset: "0%", color: this.min_color },
+      { offset: "100%", color: this.max_color }])
+      .join("stop")
+      .attr("offset", (d: any) => d.offset)
+      .attr("stop-color", (d: any) => d.color)
+
+    const rect = this.legend
+      .append("rect")
+      .attr("x", 50)
+      .attr("y", 5)
+      .attr("width", legendwidth)
+      .attr("height", legendheight)
+      .style("fill", "url(#gradient)")
+    // .style('opacity', 0.9);
+
+    this.legend.append('g')
+      .attr("class", "x axis")
+      .attr("transform", "translate(50, 5)")
+      .call(coloraxis);
+
+    this.legend.append('text')
+      .attr('x', 5)
+      .attr('y', -10)
+      .attr("transform", "rotate(90)")
+      .text('Apparent Fishing Activity in Hours')
+      
+
     // const button = <HTMLButtonElement>document.getElementById('updateButton');
     // button.click()
     this.navigation.on('moveend zoomend', () => {
-      console.log("Pixel Origin: ",this.navigation.getPixelOrigin())
+      console.log("Pixel Origin: ", this.navigation.getPixelOrigin())
       const bounds = document.querySelector("#compBorder")!.getBoundingClientRect();
       const bl1 = L.point(bounds.left, bounds.bottom)
       const tr1 = L.point(bounds.right, bounds.top)
       const bl = this.navigation.layerPointToLatLng(bl1);
       const tr = this.navigation.layerPointToLatLng(tr1);
-      const navBounds = this.navigation.getBounds();
-      bl.lng = navBounds.getWest();
-      tr.lng = navBounds.getEast();
-      bl.lat = navBounds.getSouth();
-      tr.lat = navBounds.getNorth();
+      // const navBounds = this.navigation.getBounds();
+      // bl.lng = navBounds.getWest();
+      // tr.lng = navBounds.getEast();
+      // bl.lat = navBounds.getSouth();
+      // tr.lat = navBounds.getNorth();
       this.cs.setBlTr([bl.lat, bl.lng], [tr.lat, tr.lng]);
       this.cs.setCenter(this.navigation.getCenter());
       this.cs.setZoom(this.navigation.getZoom());

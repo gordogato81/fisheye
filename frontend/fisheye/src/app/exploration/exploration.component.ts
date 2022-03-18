@@ -116,14 +116,8 @@ export class ExplorationComponent implements OnInit {
       .style("padding", "10px")
       .style('z-index', 1000000);
     this.legend = d3.select('#legend')
-      // d3.select('.leaflet-control-container')
-      // .select(".leaflet-bottom.leaflet-right")
-      // .append('svg')
       .attr('height', 400)
       .attr('width', 100)
-    // .attr('bottom', 0)
-    // .attr('right', 0)
-    // .attr('id', 'clegend');
 
     // this.canvas
     //   .on("pointermove", function (event: any, d: any) { that.mousemove(event, d) })
@@ -190,7 +184,7 @@ export class ExplorationComponent implements OnInit {
 
       const rect = this.legend
         .append("rect")
-        .attr("x", 80)
+        .attr("x", 65)
         .attr("y", 30)
         .attr("width", legendwidth)
         .attr("height", legendheight)
@@ -199,8 +193,14 @@ export class ExplorationComponent implements OnInit {
 
       this.legend.append('g')
         .attr("class", "x axis")
-        .attr("transform", "translate(80, 30)")
+        .attr("transform", "translate(65, 30)")
         .call(coloraxis);
+      
+      this.legend.append('text')
+        .attr('x', 90)
+        .attr('y', -85)
+        .attr("transform", "rotate(90)")
+        .text('Apparent Fishing Activity in Hours')
     });
 
     this.map.on('moveend zoomend', update);

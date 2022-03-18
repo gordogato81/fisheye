@@ -1,7 +1,7 @@
 %width-containers
     display: inline-block
     width: 24%
-    height: 880px 
+    height: 880px
 
 %height-containers
     display: flow-root
@@ -39,7 +39,7 @@
 
 .map-container-top
     @extend %height-containers
-    
+
 .map-container-bottom
     @extend %height-containers
 
@@ -58,10 +58,8 @@
 #navigation
     height: 863px
 
-
 mat-form-field
-  width: 100%
-
+    width: 100%
 
 #filter
     width: 93%
@@ -69,8 +67,16 @@ mat-form-field
     display: flex
     flex-direction: column
     justify-content: space-between
-    
-   
+
+#legendTitle
+    transform: rotate(90deg)
+
+#legendCard
+    z-index: 999
+    position: absolute
+    bottom: -7%
+    right: 35.7%
+    transform: rotate(-90deg)
 
 #updateButton
     width: 100%
@@ -100,7 +106,7 @@ p
     text-decoration-color: #ffa800
     background-color: rgb(255,255,255, 0.8)
     padding: 0.2em
-    border-radius: 5px    // -webkit-text-stroke: 0.01px gray
+    border-radius: 5px // -webkit-text-stroke: 0.01px gray
 
 .maps-container
     width: 100%
