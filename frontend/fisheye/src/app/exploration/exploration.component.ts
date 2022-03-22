@@ -116,8 +116,8 @@ export class ExplorationComponent implements OnInit {
       .style("padding", "10px")
       .style('z-index', 1000000);
     this.legend = d3.select('#legend')
-      .attr('height', 400)
-      .attr('width', 100)
+      .attr('height', 360)
+      .attr('width', 80)
 
     // this.canvas
     //   .on("pointermove", function (event: any, d: any) { that.mousemove(event, d) })
@@ -184,8 +184,8 @@ export class ExplorationComponent implements OnInit {
 
       const rect = this.legend
         .append("rect")
-        .attr("x", 65)
-        .attr("y", 30)
+        .attr("x", 35)
+        .attr("y", 10)
         .attr("width", legendwidth)
         .attr("height", legendheight)
         .style("fill", "url(#gradient)")
@@ -193,12 +193,12 @@ export class ExplorationComponent implements OnInit {
 
       this.legend.append('g')
         .attr("class", "x axis")
-        .attr("transform", "translate(65, 30)")
+        .attr("transform", "translate(35, 10)")
         .call(coloraxis);
       
       this.legend.append('text')
-        .attr('x', 90)
-        .attr('y', -85)
+        .attr('x', 70)
+        .attr('y', -55)
         .attr("transform", "rotate(90)")
         .text('Apparent Fishing Activity in Hours')
     });
