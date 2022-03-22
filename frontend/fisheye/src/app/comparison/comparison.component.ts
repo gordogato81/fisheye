@@ -63,7 +63,14 @@ export class ComparisonComponent implements OnInit {
   options4: Country[] = countryJson;
   filteredOptions4!: Observable<Country[]>;
 
+
+
   ngOnInit(): void {
+
+    this.showProgress1();
+    this.showProgress2();
+    this.showProgress3();
+    this.showProgress4();
 
     this.filteredOptions1 = this.countryControl1.valueChanges.pipe(
       startWith(''),
@@ -206,6 +213,81 @@ export class ComparisonComponent implements OnInit {
 
   }
 
+  showProgress1(){
+    let element = document.getElementById("progress1");
+
+    if(element!= null){
+      element.style.visibility = "visible";
+    }
+    
+  }
+
+  
+  showProgress2(){
+    let element = document.getElementById("progress2");
+
+    if(element!= null){
+      element.style.visibility = "visible";
+    }
+
+  }
+
+  
+  showProgress3(){
+    let element = document.getElementById("progress3");
+
+    if(element!= null){
+      element.style.visibility = "visible";
+    }
+
+  }
+
+  
+  showProgress4(){
+    let element = document.getElementById("progress4");
+
+    if(element!= null){
+      element.style.visibility = "visible";
+    }
+
+  }
+
+  hideProgress1(){
+    let element = document.getElementById("progress1");
+
+    if(element!= null){
+      element.style.visibility = "hidden";
+    }
+
+  }
+
+  hideProgress2(){
+    let element = document.getElementById("progress2");
+
+    if(element!= null){
+      element.style.visibility = "hidden";
+    }
+
+  }
+
+  hideProgress3(){
+    let element = document.getElementById("progress3");
+
+    if(element!= null){
+      element.style.visibility = "hidden";
+    }
+
+  }
+
+  hideProgress4(){
+    let element = document.getElementById("progress4");
+
+    if(element!= null){
+      element.style.visibility = "hidden";
+    }
+
+  }
+
   private _filter(name: string): Country[] {
     const filterValue = name.toLowerCase();
 
@@ -213,6 +295,10 @@ export class ComparisonComponent implements OnInit {
   }
 
   clickUpdate() {
+    this.showProgress1();
+    this.showProgress2();
+    this.showProgress3();
+    this.showProgress4();
     const map1 = <L.Map>this.cs.getMap(1);
     const map2 = <L.Map>this.cs.getMap(2);
     const map3 = <L.Map>this.cs.getMap(3);
@@ -223,11 +309,11 @@ export class ComparisonComponent implements OnInit {
     map2.setView(center, zoom, { animate: true });
     map3.setView(center, zoom, { animate: true });
     map4.setView(center, zoom, { animate: true });
-    // const bounds = map1.getBounds();
-    // this.bl[0] = bounds.getSouth();
-    // this.bl[1] = bounds.getWest();
-    // this.tr[0] = bounds.getNorth();
-    // this.tr[1] = bounds.getEast();
+    const bounds = map1.getBounds();
+    this.bl[0] = bounds.getSouth();
+    this.bl[1] = bounds.getWest();
+    this.tr[0] = bounds.getNorth();
+    this.tr[1] = bounds.getEast();
 
     this.bl = this.cs.getBl();
     this.tr = this.cs.getTr();
@@ -314,6 +400,7 @@ export class ComparisonComponent implements OnInit {
     const canvas = this.cs.getCanvas(id);
     const country = this.countryControl1.value
     this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
+      this.hideProgress1(); 
       this.cs.setData(data, id);
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
@@ -352,6 +439,7 @@ export class ComparisonComponent implements OnInit {
     const canvas = this.cs.getCanvas(id);
     const country = this.countryControl2.value;
     this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
+      this.hideProgress2();
       this.cs.setData(data, id);
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
@@ -391,6 +479,7 @@ export class ComparisonComponent implements OnInit {
     const canvas = this.cs.getCanvas(id);
     const country = this.countryControl3.value;
     this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
+      this.hideProgress3();
       this.cs.setData(data, id);
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
@@ -431,6 +520,7 @@ export class ComparisonComponent implements OnInit {
     const canvas = this.cs.getCanvas(id);
     const country = this.countryControl4.value;
     this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
+      this.hideProgress4();
       this.cs.setData(data, id);
       this.cs.setLoaded(id);
       const render = new renderQueue(draw).clear(clearContext);
