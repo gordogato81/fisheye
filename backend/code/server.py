@@ -252,6 +252,7 @@ def getChartData():
         date between %s AND %s
         AND fishing_hours > 0
         group by date
+        order by date
         """
     elif (batchNum == 1):
         query = """
@@ -267,6 +268,7 @@ def getChartData():
         mmsi between %s AND %s  
         AND fishing_hours > 0
         group by date
+        order by date
         """
     elif (batchNum == 2):
         query = """
@@ -282,6 +284,7 @@ def getChartData():
         (mmsi between %s and %s OR mmsi between %s and %s)  
         AND fishing_hours > 0
         group by date
+        order by date
         """
     elif (batchNum == 3):
         query = """
@@ -297,6 +300,7 @@ def getChartData():
         (mmsi between %s and %s OR mmsi between %s and %s OR mmsi between %s and %s)  
         AND fishing_hours > 0
         group by date
+        order by date
         """
 
     with connection.cursor(cursor_factory=RealDictCursor) as cursor:

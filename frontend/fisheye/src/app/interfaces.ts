@@ -40,3 +40,8 @@ export interface Mid {
     viewValue: string,
     mid: string;
 }
+
+export interface bin {
+    x0: Date,
+    x1: Date
+}

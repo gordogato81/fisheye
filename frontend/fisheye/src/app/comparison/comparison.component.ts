@@ -100,6 +100,18 @@ export class ComparisonComponent implements OnInit {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.navigation);
+    // L.svg().addTo(this.navigation);
+    // d3.select(this.navigation.getPanes().overlayPane)
+    // .select('svg')
+    // .append('rect')
+    // .attr('id', 'compBorder')
+    // .attr('width', '83.4%')
+    // .attr('height', '41.8%')
+    // .attr('y', '20.8%')
+    // .attr('x', '0.4%')
+    // .attr('fill-opacity', 0.0)
+    // .attr('stroke', 'rgb(255,168,0)')
+    // .attr('stroke-width', 3);
     // L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
     //   minZoom: 2,
     //   maxZoom: 10,
@@ -129,10 +141,18 @@ export class ComparisonComponent implements OnInit {
     this.tr[1] = bounds.getEast();
 
     //setting initial time intervals
-    this.range1.setValue({ start: '2020-01-01', end: '2020-03-31' });
-    this.range2.setValue({ start: '2020-04-01', end: '2020-06-30' });
-    this.range3.setValue({ start: '2020-07-01', end: '2020-09-30' });
-    this.range4.setValue({ start: '2020-10-01', end: '2020-12-31' });
+    this.range1.setValue({ start: '2020-01-01', end: '2020-01-31' });
+    this.range2.setValue({ start: '2020-04-01', end: '2020-04-30' });
+    this.range3.setValue({ start: '2020-07-01', end: '2020-07-31' });
+    this.range4.setValue({ start: '2020-10-01', end: '2020-10-31' });
+
+    console.log(this.bl, this.tr);
+    console.log(this.map1.project(this.bl), this.map1.project(this.tr));
+    const pixelMap = this.map1.getPixelBounds();
+    const pixelBounds = this.navigation.getPixelBounds();
+    console.log(pixelMap.getBottomLeft(), pixelMap.getTopRight());
+    console.log(pixelBounds.getBottomLeft(), pixelBounds.getTopRight());
+    console.log(pixelBounds.getBottomLeft().y - 217, pixelBounds.getTopRight().y + 217);
 
     this.getData(this.bl, this.tr);
 
@@ -141,28 +161,35 @@ export class ComparisonComponent implements OnInit {
       .attr('width', 70);
 
     this.navigation.on('moveend zoomend', () => {
-      // console.log("Pixel Origin: ", this.navigation.getPixelOrigin())
-      // const bounds = document.querySelector("#compBorder")!.getBoundingClientRect();
-      // const bl1 = L.point(bounds.left, bounds.bottom)
-      // const tr1 = L.point(bounds.right, bounds.top)
-      // const bl = this.navigation.layerPointToLatLng(bl1);
-      // const tr = this.navigation.layerPointToLatLng(tr1);
-      // const navBounds = this.navigation.getBounds();
-      // bl.lng = navBounds.getWest();
-      // tr.lng = navBounds.getEast();
-      // bl.lat = navBounds.getSouth();
-      // tr.lat = navBounds.getNorth();
-      // this.cs.setBlTr([bl.lat, bl.lng], [tr.lat, tr.lng]);
+      let bl: L.LatLng = L.latLng(0, 0),
+        tr: L.LatLng = L.latLng(0, 0);
+      const navBounds = this.navigation.getBounds();
+      const pixelBounds = this.navigation.getPixelBounds();
+      const bl1 = L.point(pixelBounds.getBottomLeft().x, (pixelBounds.getBottomLeft().y - 217)); // 217 is a hardcoded value based on the hard coded height of each container. 
+      const tr1 = L.point(pixelBounds.getTopRight().x, (pixelBounds.getTopRight().y + 217));
+      bl = this.navigation.unproject(bl1);
+      tr = this.navigation.unproject(tr1);
+      bl.lng = this.truncate(navBounds.getWest());
+      tr.lng = this.truncate(navBounds.getEast());
+      bl.lat = this.truncate(bl.lat);
+      tr.lat = this.truncate(tr.lat);
+      this.cs.setBlTr([bl.lat, bl.lng], [tr.lat, tr.lng]);
       this.cs.setCenter(this.navigation.getCenter());
       this.cs.setZoom(this.navigation.getZoom());
     });
-    // const para = document.getElementById('con')!;
 
-    // para.addEventListener('mousemove', (event) => {
-    //   console.log(event.pageX, event.pageY);
-    // });
+    // this.navigation.on('mousemove', event => {
+    //   console.log(event)
+    // })
 
-
+  }
+  truncate(x: number) {
+    if (x < 0) {
+      x = Math.ceil(x * 10) / 10;
+    } else if (x >= 0) {
+      x = Math.floor(x * 10) / 10;
+    }
+    return x
   }
 
   showProgress1() {
@@ -237,18 +264,18 @@ export class ComparisonComponent implements OnInit {
     const map4 = <L.Map>this.cs.getMap(4);
     const zoom = this.cs.getZoom()
     const center = this.cs.getCenter();
-    map1.setView(center, zoom, { animate: true });
-    map2.setView(center, zoom, { animate: true });
-    map3.setView(center, zoom, { animate: true });
-    map4.setView(center, zoom, { animate: true });
-    const bounds = map1.getBounds();
-    this.bl[0] = bounds.getSouth();
-    this.bl[1] = bounds.getWest();
-    this.tr[0] = bounds.getNorth();
-    this.tr[1] = bounds.getEast();
+    map1.setView(center, zoom, { animate: false });
+    map2.setView(center, zoom, { animate: false });
+    map3.setView(center, zoom, { animate: false });
+    map4.setView(center, zoom, { animate: false });
+    // const bounds = map1.getBounds();
+    // this.bl[0] = bounds.getSouth();
+    // this.bl[1] = bounds.getWest();
+    // this.tr[0] = bounds.getNorth();
+    // this.tr[1] = bounds.getEast();
 
-    // this.bl = this.cs.getBl();
-    // this.tr = this.cs.getTr();
+    this.bl = this.cs.getBl();
+    this.tr = this.cs.getTr();
     console.log(this.bl, this.tr);
     this.getData(this.bl, this.tr);
   }
@@ -318,6 +345,7 @@ export class ComparisonComponent implements OnInit {
       this.hideProgress3();
       this.hideProgress4();
       // <<< removing previously rendered items <<<
+      console.log(data);
 
       const render1 = new renderQueue(draw1).clear(clearContext1);
       const render2 = new renderQueue(draw2).clear(clearContext2);
