@@ -32,6 +32,8 @@ export class StatisticComponent implements OnInit {
   minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
   worldChecked = true;
+  chart = 'bar';
+  barAg = 'week';
 
 
   ngOnInit(): void {
@@ -42,18 +44,18 @@ export class StatisticComponent implements OnInit {
     );
 
     this.navigation = L.map('navigation2').setView([18, 0], 2.5);
-    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //   minZoom: 2,
-    //   maxZoom: 10,
-    //   attribution:
-    //     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    // })
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       minZoom: 2,
       maxZoom: 10,
       attribution:
-        '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.navigation);
+    // L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
+    //   minZoom: 2,
+    //   maxZoom: 10,
+    //   attribution:
+    //     '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+    // })
 
     this.navigation.on('moveend zoomend', () => {
       let bl: L.LatLng = L.latLng(0, 0),
@@ -94,12 +96,20 @@ export class StatisticComponent implements OnInit {
     // const navMap = this.stService.getMap();
     // // console.log(navMap.getBounds());
     if (this.worldChecked) {
-      // this.fillChart(start, end, country);
-      this.fillBar(start, end, country);
+      if (this.chart == 'bar') {
+        this.fillBar(start, end, country);
+      } else if (this.chart == 'line') {
+        this.fillChart(start, end, country);
+      }      
     } else {
       const bl = this.stService.getBl();
       const tr = this.stService.getTr();
-      this.fillChart(start, end, country, bl, tr);
+      if (this.chart == 'bar') {
+        this.fillBar(start, end, country, bl, tr);
+      } else if (this.chart == 'line') {
+        this.fillChart(start, end, country, bl, tr);
+      }
+      
     }
   }
 
@@ -125,8 +135,21 @@ export class StatisticComponent implements OnInit {
       //Manually type casting bin to be <cData, Date> took 4 hours to figure out
       const histogram = d3.bin<cData, Date>()
         .value(d => d.date)
-        .domain([start, end])
+        .domain([start, end]);
+      if (this.barAg == 'day') {
+        histogram
+        .thresholds(xScale.ticks(d3.timeDay));
+      } else if (this.barAg == 'week') {
+        histogram
+        .thresholds(xScale.ticks(d3.timeWeek));
+      } else if (this.barAg == 'month') {
+        histogram
         .thresholds(xScale.ticks(d3.timeMonth));
+      } else if (this.barAg == 'year') {
+        histogram
+        .thresholds(xScale.ticks(d3.timeYear));
+      }
+        
 
       const bins = histogram(data);
       const means = this.dataToBins(data, bins);
@@ -167,19 +190,7 @@ export class StatisticComponent implements OnInit {
     });
   }
 
-  dataToBins(data: cData[], bins: any): number[] {
-    let binned: cData[][] = [];
-    bins.forEach((b: any) => {
-      const daBin = data.filter((d: cData) => new Date(d.date) >= b.x0 && new Date(d.date) < b.x1);
-      binned.push(daBin);
-    });
 
-    let sums: number[] = []
-    binned.forEach((b: cData[]) => {
-      sums.push(<number>d3.sum(b.map(d => d.tfh)));
-    })
-    return sums
-  }
 
   fillChart(start: Date, end: Date, country: string, bl?: [number, number], tr?: [number, number]) {
     this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country, bl, tr).subscribe(data => {
@@ -228,6 +239,28 @@ export class StatisticComponent implements OnInit {
     return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
   }
 
+  dataToBins(data: cData[], bins: any): number[] {
+    let binned: cData[][] = [];
+    bins.forEach((b: any) => {
+      const daBin = data.filter((d: cData) => new Date(d.date) >= b.x0 && new Date(d.date) < b.x1);
+      binned.push(daBin);
+    });
+
+    let sums: number[] = []
+    binned.forEach((b: cData[]) => {
+      sums.push(<number>d3.sum(b.map(d => d.tfh)));
+    })
+    return sums
+  }
+
+  radioChange() {
+    if (this.chart == 'line') {
+      this.countryControl.disable()
+    } else if (this.chart == 'bar') {
+      this.countryControl.enable()
+    }
+    
+  }
 
   clickUpdate() {
     //alert("Hi there, we have been trying to reach you about your car's extended warranty. Please call us back at +491723304303")
