@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { APIService } from '../service/api.service';
-import { map, Observable, startWith } from 'rxjs';
+import { forkJoin, map, observable, Observable, startWith } from 'rxjs';
 import { FormControl, FormGroup } from '@angular/forms';
 import * as L from 'leaflet'
 import * as d3 from 'd3'
@@ -34,7 +34,8 @@ export class StatisticComponent implements OnInit {
   worldChecked = true;
   chart = 'bar';
   barAg = 'week';
-
+  mCountries = new FormControl();
+  lineSelection: string[] = []
 
   ngOnInit(): void {
     this.filteredOptions = this.countryControl.valueChanges.pipe(
@@ -42,7 +43,7 @@ export class StatisticComponent implements OnInit {
       map(value => (typeof value === 'string' ? value : value.name)),
       map(name => (name ? this._filter(name) : this.options.slice())),
     );
-
+    this.mCountries.disable();
     this.navigation = L.map('navigation2').setView([18, 0], 2.5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       minZoom: 2,
@@ -91,6 +92,7 @@ export class StatisticComponent implements OnInit {
 
   callChart() {
     const country = this.countryControl.value;
+    const countries = this.mCountries.value;
     const start = new Date(Date.parse(this.range1.value.start));
     const end = new Date(Date.parse(this.range1.value.end));
     // const navMap = this.stService.getMap();
@@ -99,17 +101,16 @@ export class StatisticComponent implements OnInit {
       if (this.chart == 'bar') {
         this.fillBar(start, end, country);
       } else if (this.chart == 'line') {
-        this.fillChart(start, end, country);
-      }      
+        this.fillChart(start, end, countries);
+      }
     } else {
       const bl = this.stService.getBl();
       const tr = this.stService.getTr();
       if (this.chart == 'bar') {
         this.fillBar(start, end, country, bl, tr);
       } else if (this.chart == 'line') {
-        this.fillChart(start, end, country, bl, tr);
+        this.fillChart(start, end, countries, bl, tr);
       }
-      
     }
   }
 
@@ -138,18 +139,18 @@ export class StatisticComponent implements OnInit {
         .domain([start, end]);
       if (this.barAg == 'day') {
         histogram
-        .thresholds(xScale.ticks(d3.timeDay));
+          .thresholds(xScale.ticks(d3.timeDay));
       } else if (this.barAg == 'week') {
         histogram
-        .thresholds(xScale.ticks(d3.timeWeek));
+          .thresholds(xScale.ticks(d3.timeWeek));
       } else if (this.barAg == 'month') {
         histogram
-        .thresholds(xScale.ticks(d3.timeMonth));
+          .thresholds(xScale.ticks(d3.timeMonth));
       } else if (this.barAg == 'year') {
         histogram
-        .thresholds(xScale.ticks(d3.timeYear));
+          .thresholds(xScale.ticks(d3.timeYear));
       }
-        
+
 
       const bins = histogram(data);
       const means = this.dataToBins(data, bins);
@@ -158,8 +159,8 @@ export class StatisticComponent implements OnInit {
         const x0 = bins[i].x0!;
         const x1 = bins[i].x1!;
         const tfh = means[i];
-        const it: { x0: Date, x1: Date, tfh: number } = {x0,x1, tfh};
-        
+        const it: { x0: Date, x1: Date, tfh: number } = { x0, x1, tfh };
+
         binSums.push(it);
       }
       // console.log(binMean)
@@ -192,8 +193,31 @@ export class StatisticComponent implements OnInit {
 
 
 
-  fillChart(start: Date, end: Date, country: string, bl?: [number, number], tr?: [number, number]) {
-    this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country, bl, tr).subscribe(data => {
+  fillChart(start: Date, end: Date, countries: string[], bl?: [number, number], tr?: [number, number]) {
+    let joined$ = new Observable;
+    if (countries.length == 1) {
+      const data1$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[0], bl, tr);
+      joined$ = forkJoin([data1$]);
+    } else if (countries.length == 2) {
+      const data1$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[0], bl, tr);
+      const data2$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[1], bl, tr);
+      joined$ = forkJoin([data1$, data2$]);
+    } else if (countries.length == 3) {
+      const data1$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[0], bl, tr);
+      const data2$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[1], bl, tr);
+      const data3$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[2], bl, tr);
+      joined$ = forkJoin([data1$, data2$, data3$]);
+    } else if (countries.length == 4) {
+      const data1$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[0], bl, tr);
+      const data2$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[1], bl, tr);
+      const data3$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[2], bl, tr);
+      const data4$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[3], bl, tr);
+      joined$ = forkJoin([data1$, data2$, data3$, data4$]);
+    } else {
+      joined$ = forkJoin([]);
+    }
+
+    joined$.subscribe((data: any) => {
       // const startDate = new Date(data[0].date);
       // const endDate = new Date(data[data.length - 1].date);
       //let getValues = data.map(d => d.date);
@@ -217,7 +241,36 @@ export class StatisticComponent implements OnInit {
         .attr("transform", "translate(0," + this.height + ")")
         .call(d3.axisBottom(xScale));
 
-      const tfhMax = d3.max(data, function (d: cData) { return +d.tfh; }) ?? 10;
+      let maxes = [];
+      if (data.length == 1) {
+        const max1 = d3.max(data[0], function (d: cData) { return +d.tfh; }) ?? 10;
+        maxes.push(max1);
+      } else if (data.length == 2) {
+        const max1 = d3.max(data[0], function (d: cData) { return +d.tfh; }) ?? 10;
+        const max2 = d3.max(data[1], function (d: cData) { return +d.tfh; }) ?? 10;
+        maxes.push(max1);
+        maxes.push(max2);
+      } else if (data.length == 3) {
+        const max1 = d3.max(data[0], function (d: cData) { return +d.tfh; }) ?? 10;
+        const max2 = d3.max(data[1], function (d: cData) { return +d.tfh; }) ?? 10;
+        const max3 = d3.max(data[2], function (d: cData) { return +d.tfh; }) ?? 10;
+        maxes.push(max1);
+        maxes.push(max2);
+        maxes.push(max3);
+
+      } else if (data.length == 4) {
+        const max1 = d3.max(data[0], function (d: cData) { return +d.tfh; }) ?? 10;
+        const max2 = d3.max(data[1], function (d: cData) { return +d.tfh; }) ?? 10;
+        const max3 = d3.max(data[2], function (d: cData) { return +d.tfh; }) ?? 10;
+        const max4 = d3.max(data[3], function (d: cData) { return +d.tfh; }) ?? 10;
+        maxes.push(max1);
+        maxes.push(max2);
+        maxes.push(max3);
+        maxes.push(max4);
+
+      }
+
+      const tfhMax = d3.max(maxes, function (d: number) { return d; }) ?? 10;
       // Y axis: initialization
       let yScale = d3.scaleLinear()
         .domain([0, tfhMax])
@@ -225,14 +278,76 @@ export class StatisticComponent implements OnInit {
       svg.append("g")
         .call(d3.axisLeft(yScale));
 
-      const line: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
+      const linef1: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
+      const linef2: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
+      const linef3: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
+      const linef4: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
 
-      svg.append("path")
-        .datum(data)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1.5)
-        .attr("d", line)
+      if (data.length == 1) {
+        const line1 = svg.append("path")
+          .datum(data[0])
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef1)
+      } else if (data.length == 2) {
+        const line1 = svg.append("path")
+          .datum(data[0])
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef1)
+        const line2 = svg.append("path")
+          .datum(data[1])
+          .attr("fill", "none")
+          .attr("stroke", "orange")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef2)
+      } else if (data.length == 3) {
+        const line1 = svg.append("path")
+          .datum(data[0])
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef1);
+        const line2 = svg.append("path")
+          .datum(data[1])
+          .attr("fill", "none")
+          .attr("stroke", "orange")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef2);
+        const line3 = svg.append("path")
+          .datum(data[2])
+          .attr("fill", "none")
+          .attr("stroke", "purple")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef3);
+      } else if (data.length == 4) {
+        const line1 = svg.append("path")
+          .datum(data[0])
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef1);
+        const line2 = svg.append("path")
+          .datum(data[1])
+          .attr("fill", "none")
+          .attr("stroke", "orange")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef2);
+        const line3 = svg.append("path")
+          .datum(data[2])
+          .attr("fill", "none")
+          .attr("stroke", "purple")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef3);
+        const line4 = svg.append("path")
+          .datum(data[3])
+          .attr("fill", "none")
+          .attr("stroke", "green")
+          .attr("stroke-width", 1.5)
+          .attr("d", linef4);
+      }
     })
   }
   dateToStr(d: Date) {
@@ -256,10 +371,20 @@ export class StatisticComponent implements OnInit {
   radioChange() {
     if (this.chart == 'line') {
       this.countryControl.disable()
+      this.mCountries.enable()
     } else if (this.chart == 'bar') {
       this.countryControl.enable()
+      this.mCountries.disable()
     }
-    
+
+  }
+
+  lineChange() {
+    if (this.mCountries.value.length < 5) {
+      this.lineSelection = this.mCountries.value;
+    } else if (this.mCountries.value.length >= 5) {
+      this.mCountries.setValue(this.lineSelection);
+    }
   }
 
   clickUpdate() {

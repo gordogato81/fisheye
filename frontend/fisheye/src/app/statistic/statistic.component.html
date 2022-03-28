@@ -94,6 +94,14 @@
       </div>
       <div class="maps-container">
         <h3>Line Chart Settings</h3>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Countries</mat-label>
+          <mat-select [formControl]="mCountries" (selectionChange)="lineChange()" multiple>
+            <mat-option *ngFor="let op of options" [value]="op.viewValue">{{op.viewValue}} </mat-option>
+          </mat-select>
+        </mat-form-field>
+
         <mat-divider></mat-divider>
       </div>
       <button mat-raised-button id="statUpdateButton" (click)="clickUpdate()">
