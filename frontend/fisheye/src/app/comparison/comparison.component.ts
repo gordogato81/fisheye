@@ -146,13 +146,8 @@ export class ComparisonComponent implements OnInit {
     this.range3.setValue({ start: '2020-07-01', end: '2020-07-31' });
     this.range4.setValue({ start: '2020-10-01', end: '2020-10-31' });
 
-    console.log(this.bl, this.tr);
-    console.log(this.map1.project(this.bl), this.map1.project(this.tr));
     const pixelMap = this.map1.getPixelBounds();
     const pixelBounds = this.navigation.getPixelBounds();
-    console.log(pixelMap.getBottomLeft(), pixelMap.getTopRight());
-    console.log(pixelBounds.getBottomLeft(), pixelBounds.getTopRight());
-    console.log(pixelBounds.getBottomLeft().y - 217, pixelBounds.getTopRight().y + 217);
 
     this.getData(this.bl, this.tr);
 
@@ -276,7 +271,6 @@ export class ComparisonComponent implements OnInit {
 
     this.bl = this.cs.getBl();
     this.tr = this.cs.getTr();
-    console.log(this.bl, this.tr);
     this.getData(this.bl, this.tr);
   }
 
