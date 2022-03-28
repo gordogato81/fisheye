@@ -1,0 +1,7 @@
+1. clone repo
+2. open repo folder
+3. start docker
+4. docker compose up
+5. cd frontend/fisheye
+6. npm install
+7. ng serve
