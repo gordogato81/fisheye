@@ -81,14 +81,13 @@
         </mat-form-field>
         <mat-form-field appearance="fill">
           <mat-label>Bar aggregation</mat-label>
-          <mat-select [disabled]="chart=='line'" [(value)]="barAg">
+          <mat-select [disabled]="chart == 'line'" [(value)]="barAg">
             <mat-option value="day">Days</mat-option>
             <mat-option value="week">Weeks </mat-option>
             <mat-option value="month">Months</mat-option>
             <mat-option value="year">Years</mat-option>
           </mat-select>
         </mat-form-field>
-        
 
         <mat-divider></mat-divider>
       </div>
@@ -97,11 +96,23 @@
 
         <mat-form-field appearance="fill">
           <mat-label>Countries</mat-label>
-          <mat-select [formControl]="mCountries" (selectionChange)="lineChange()" multiple>
-            <mat-option *ngFor="let op of options" [value]="op.viewValue">{{op.viewValue}} </mat-option>
+          <mat-select
+            [formControl]="mCountries"
+            (selectionChange)="lineChange()"
+            placeholder="World"
+            multiple
+          >
+            <mat-option *ngFor="let op of options" [value]="op.viewValue"
+              >{{ op.viewValue }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
 
+        <mat-divider></mat-divider>
+      </div>
+      <div class="maps-container" id="legendContainer">
+        <h3>Legend</h3>
+        <svg id="chartLegend"></svg>
         <mat-divider></mat-divider>
       </div>
       <button mat-raised-button id="statUpdateButton" (click)="clickUpdate()">

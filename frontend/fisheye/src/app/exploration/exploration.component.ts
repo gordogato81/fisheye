@@ -117,7 +117,7 @@ export class ExplorationComponent implements OnInit {
       .style('z-index', 1000000);
     this.legend = d3.select('#legend')
       .attr('height', 360)
-      .attr('width', 80)
+      .attr('width', 90)
 
     // this.canvas
     //   .on("pointermove", function (event: any, d: any) { that.mousemove(event, d) })
@@ -162,8 +162,9 @@ export class ExplorationComponent implements OnInit {
 
       if (!this.legend.selectAll('rect').empty()) this.legend.selectAll('rect').remove();
       if (!this.legend.selectAll('g').empty()) this.legend.selectAll('g').remove();
-      const legendheight = 350;
-      const legendwidth = 15;
+      if (!this.legend.selectAll('text').empty()) this.legend.selectAll('text').remove();
+      const legendheight = 345;
+      const legendwidth = 25;
 
       let colorScale = d3.scaleSymlog();
       colorScale.domain([0, this.dMax]).range([0, legendheight])
@@ -184,7 +185,7 @@ export class ExplorationComponent implements OnInit {
 
       const rect = this.legend
         .append("rect")
-        .attr("x", 35)
+        .attr("x", 50)
         .attr("y", 10)
         .attr("width", legendwidth)
         .attr("height", legendheight)
@@ -193,12 +194,12 @@ export class ExplorationComponent implements OnInit {
 
       this.legend.append('g')
         .attr("class", "x axis")
-        .attr("transform", "translate(35, 10)")
+        .attr("transform", "translate(50, 10)")
         .call(coloraxis);
       
       this.legend.append('text')
         .attr('x', 70)
-        .attr('y', -55)
+        .attr('y', -78)
         .attr("transform", "rotate(90)")
         .text('Apparent Fishing Activity in Hours')
     });

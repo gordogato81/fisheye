@@ -35,7 +35,7 @@ export class StatisticComponent implements OnInit {
   chart = 'bar';
   barAg = 'week';
   mCountries = new FormControl();
-  lineSelection: string[] = []
+  lineSelection: string[] = [];
 
   ngOnInit(): void {
     this.filteredOptions = this.countryControl.valueChanges.pipe(
@@ -224,8 +224,12 @@ export class StatisticComponent implements OnInit {
       let tDomain: [Date, Date] = [start, end]; //d3.extent(data.map(d => d.date));
       console.log(data);
       //console.log(domain);
-
+      const legendContainer = document.getElementById('legendContainer')!
+      const legendWidth = legendContainer.offsetWidth;
+      const legendheight = legendContainer.offsetHeight;
       if (!d3.select('#chart').select('svg').empty()) d3.select('#chart').select('svg').remove(); //removes previous chart if it exists
+      if (!d3.select('#chartLegend').selectAll('text').empty()) d3.select('#chartLegend').selectAll('text').remove(); //removes previous chart if it exists
+      if (!d3.select('#chartLegend').selectAll('circle').empty()) d3.select('#chartLegend').selectAll('circle').remove(); //removes previous chart if it exists
       const svg = d3.select('#chart')
         .append("svg")
         .attr("width", this.width + this.margin.left + this.margin.right)
@@ -233,7 +237,9 @@ export class StatisticComponent implements OnInit {
         .append("g")
         .attr("transform",
           "translate(" + this.margin.left + "," + this.margin.top + ")");
-
+      const legendSVG = d3.select('#chartLegend')
+        .attr('height', legendheight * 3/4)
+        .attr('width', legendWidth)
       let xScale = d3.scaleTime()
         .domain([start, end])
         .range([0, this.width]);
@@ -278,10 +284,7 @@ export class StatisticComponent implements OnInit {
       svg.append("g")
         .call(d3.axisLeft(yScale));
 
-      const linef1: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
-      const linef2: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
-      const linef3: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
-      const linef4: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh))
+      const linef1: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh));
 
       if (data.length == 1) {
         const line1 = svg.append("path")
@@ -289,20 +292,47 @@ export class StatisticComponent implements OnInit {
           .attr("fill", "none")
           .attr("stroke", "steelblue")
           .attr("stroke-width", 1.5)
-          .attr("d", linef1)
+          .attr("d", linef1);
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "steelblue");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 5 * (legendheight / 100))
+          .text(countries[0]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
       } else if (data.length == 2) {
         const line1 = svg.append("path")
           .datum(data[0])
           .attr("fill", "none")
           .attr("stroke", "steelblue")
           .attr("stroke-width", 1.5)
-          .attr("d", linef1)
+          .attr("d", linef1);
         const line2 = svg.append("path")
           .datum(data[1])
           .attr("fill", "none")
           .attr("stroke", "orange")
           .attr("stroke-width", 1.5)
-          .attr("d", linef2)
+          .attr("d", linef1)
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "steelblue");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 5 * (legendheight / 100))
+          .text(countries[0]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 4 * 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "orange");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 4 * 5 * (legendheight / 100))
+          .text(countries[1]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
       } else if (data.length == 3) {
         const line1 = svg.append("path")
           .datum(data[0])
@@ -315,13 +345,40 @@ export class StatisticComponent implements OnInit {
           .attr("fill", "none")
           .attr("stroke", "orange")
           .attr("stroke-width", 1.5)
-          .attr("d", linef2);
+          .attr("d", linef1);
         const line3 = svg.append("path")
           .datum(data[2])
           .attr("fill", "none")
           .attr("stroke", "purple")
           .attr("stroke-width", 1.5)
-          .attr("d", linef3);
+          .attr("d", linef1);
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "steelblue");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 5 * (legendheight / 100))
+          .text(countries[0]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 4 * 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "orange");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 4 * 5 * (legendheight / 100))
+          .text(countries[2]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 8 * 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "purple");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 8 * 5 * (legendheight / 100))
+          .text(countries[3]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
       } else if (data.length == 4) {
         const line1 = svg.append("path")
           .datum(data[0])
@@ -334,19 +391,55 @@ export class StatisticComponent implements OnInit {
           .attr("fill", "none")
           .attr("stroke", "orange")
           .attr("stroke-width", 1.5)
-          .attr("d", linef2);
+          .attr("d", linef1);
         const line3 = svg.append("path")
           .datum(data[2])
           .attr("fill", "none")
           .attr("stroke", "purple")
           .attr("stroke-width", 1.5)
-          .attr("d", linef3);
+          .attr("d", linef1);
         const line4 = svg.append("path")
           .datum(data[3])
           .attr("fill", "none")
           .attr("stroke", "green")
           .attr("stroke-width", 1.5)
-          .attr("d", linef4);
+          .attr("d", linef1);
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "steelblue");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 5 * (legendheight / 100))
+          .text(countries[0]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 4.5 * 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "orange");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 4.5 * 5 * (legendheight / 100))
+          .text(countries[1]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 8 * 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "purple");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 8 * 5 * (legendheight / 100))
+          .text(countries[2]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
+        legendSVG.append("circle")
+          .attr("cx", 0 + 5 * (legendWidth / 100))
+          .attr("cy", 0 + 11.5 * 5 * (legendheight / 100))
+          .attr("r", 6).style("fill", "green");
+        legendSVG.append("text")
+          .attr("x", 20 + 5 * (legendWidth / 100))
+          .attr("y", 0 + 11.5 * 5 * (legendheight / 100))
+          .text(countries[3]).style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
       }
     })
   }
@@ -370,11 +463,12 @@ export class StatisticComponent implements OnInit {
 
   radioChange() {
     if (this.chart == 'line') {
-      this.countryControl.disable()
-      this.mCountries.enable()
+      this.countryControl.disable();
+      this.mCountries.enable();
+
     } else if (this.chart == 'bar') {
-      this.countryControl.enable()
-      this.mCountries.disable()
+      this.countryControl.enable();
+      this.mCountries.disable();
     }
 
   }
