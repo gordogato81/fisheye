@@ -82,15 +82,6 @@ export class StatisticComponent implements OnInit {
     this.callChart();
   }
 
-  truncate(x: number) {
-    if (x < 0) {
-      x = Math.ceil(x * 10) / 10;
-    } else if (x >= 0) {
-      x = Math.floor(x * 10) / 10;
-    }
-    return x
-  }
-
   callChart() {
     const country = this.countryControl.value;
     const countries = this.mCountries.value;
@@ -121,7 +112,7 @@ export class StatisticComponent implements OnInit {
     this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country, bl, tr).subscribe(data => {
       this.hideProgress();
       console.log(data);
-      
+
       const legendContainer = document.getElementById('legendContainer')!
       const graphContainer = document.getElementById('graphContainer')!;
       const legendWidth = legendContainer.offsetWidth;
@@ -605,6 +596,15 @@ export class StatisticComponent implements OnInit {
   }
   dateToStr(d: Date) {
     return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
+  }
+
+  truncate(x: number) {
+    if (x < 0) {
+      x = Math.ceil(x * 10) / 10;
+    } else if (x >= 0) {
+      x = Math.floor(x * 10) / 10;
+    }
+    return x
   }
 
   dataToBins(data: cData[], bins: any): number[] {

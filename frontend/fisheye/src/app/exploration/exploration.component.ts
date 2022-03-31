@@ -132,6 +132,53 @@ export class ExplorationComponent implements OnInit {
     this.range.setValue({ start: start, end: end });
     this.countryControl.setValue('World')
 
+    // this.map.on('mousemove', function (event: L.LeafletMouseEvent) {
+    //   const data = that.es.getData();
+    //   if (!(data === undefined)) {
+    //     if (data.length <= 50000) {
+    //       const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
+    //       const lng = that.truncate(event.latlng.lng);
+    //       const d: any = data.find((d: tmp) => d.lat == lat - 0.1 && d.lon == lng);
+    //       if (!(d === undefined)) {
+    //         that.tooltip
+    //           .style("position", "absolute")
+    //           .style('z-index', 9999)
+    //           .style('visibility', 'visible')
+    //           .style('left', event.originalEvent.pageX + 20 + "px")
+    //           .style('top', event.originalEvent.pageY + 20 + "px")
+    //           .html('Latitude: ' + d.lat + '<br>'
+    //             + 'Longitude: ' + d.lon + '<br>'
+    //             + 'Fishing Hours: ' + Math.round(d.tfh * 100) / 100);
+    //       } else {
+    //         that.tooltip.style('visibility', 'hidden');
+    //       }
+    //     }
+    //   }
+    // });
+
+    this.map.on('click', function (event: L.LeafletMouseEvent) {
+      const data = that.es.getData();
+      const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
+      const lng = that.truncate(event.latlng.lng);
+
+      if (!(data === undefined)) {
+        const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng);
+        if (!(d === undefined)) {
+          that.tooltip
+            .style("position", "absolute")
+            .style('z-index', 9999)
+            .style('visibility', 'visible')
+            .style('left', event.originalEvent.pageX + 20 + "px")
+            .style('top', event.originalEvent.pageY + 20 + "px")
+            .html('Latitude: ' + d.lat + '<br>'
+              + 'Longitude: ' + d.lon + '<br>'
+              + 'Fishing Hours: ' + Math.round(d.tfh * 100) / 100);
+        } else {
+          that.tooltip.style('visibility', 'hidden');
+        }
+      }
+    });
+
   }
 
   private _filter(name: string): Country[] {
@@ -197,12 +244,14 @@ export class ExplorationComponent implements OnInit {
         .attr("class", "x axis")
         .attr("transform", "translate(50, 10)")
         .call(coloraxis);
-      
+
       this.legend.append('text')
         .attr('x', 70)
         .attr('y', -78)
         .attr("transform", "rotate(90)")
         .text('Apparent Fishing Activity in Hours')
+
+
     });
 
     this.map.on('moveend zoomend', update);
@@ -250,7 +299,6 @@ export class ExplorationComponent implements OnInit {
 
     function update() {
       // console.log(that.map.getZoom());
-      console.log(that.dMax)
       if (that.loaded) {
         that.render(that.r_data);
       }
@@ -259,15 +307,16 @@ export class ExplorationComponent implements OnInit {
 
 
   onDateChange(event: any) {
-    const start = new Date(Date.parse(this.range.value.start));
-    const end = new Date(Date.parse(this.range.value.end));
-    this.sliderVal = this.dateToVal(start);
-    this.intervalLength = this.dateRangeToInterval(start, end);
-    this.getData(this.dateToStr(start), this.dateToStr(end));
-    const render = this.es.getRenderer()
-    const data = this.es.getData()
-    render(data);
-
+    if (this.range.value.end) {
+      const start = new Date(Date.parse(this.range.value.start));
+      const end = new Date(Date.parse(this.range.value.end));
+      this.sliderVal = this.dateToVal(start);
+      this.intervalLength = this.dateRangeToInterval(start, end);
+      this.getData(this.dateToStr(start), this.dateToStr(end));
+      const render = this.es.getRenderer()
+      const data = this.es.getData()
+      render(data);
+    }
   }
 
   onInputChange(event: MatSliderChange) {
@@ -302,6 +351,15 @@ export class ExplorationComponent implements OnInit {
   dateToVal(date: Date) {
     const min_date = new Date(this.minDate);
     return this.dateRangeToInterval(min_date, date);
+  }
+
+  truncate(x: number) {
+    if (x < 0) {
+      x = Math.ceil(x * 10) / 10;
+    } else if (x >= 0) {
+      x = Math.floor(x * 10) / 10;
+    }
+    return x
   }
 
   intervalToEndDate(start: Date) {
