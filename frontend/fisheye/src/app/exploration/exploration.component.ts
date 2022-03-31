@@ -142,7 +142,7 @@ export class ExplorationComponent implements OnInit {
 
   private getData(start: string, end: string) {
     const that = this;
-
+    this.showProgress();
     this.map = this.es.getMap();
     const context = this.es.getContext();
     const canvas = this.es.getCanvas();
@@ -150,6 +150,7 @@ export class ExplorationComponent implements OnInit {
 
     this.ds.getDateRangeVal(start, end, country).subscribe(data => {
       clearContext();
+      this.hideProgress();
       this.r_data = data;
       this.es.setData(this.r_data);
       this.loaded = true;
@@ -351,24 +352,19 @@ export class ExplorationComponent implements OnInit {
     return size
   }
 
-  // mousemove(event: any, d: any) {
-  //   console.log(d);
-  //   // const c_val = this.getDataVal(d, country_data, this.choroProperty) ?? 0;
-  //   // const b_val = this.getDataVal(d, country_data, this.bubbleProperty) ?? 0;
-  //   // this.tooltip
-  //   //   .html(d.properties.NAME + '<br>'
-  //   //     + this.betterNames(this.choroProperty) + ': ' + Math.round(c_val * 100) / 100 + '<br>'
-  //   //     + this.betterNames(this.bubbleProperty) + ': ' + Math.round(b_val * 100) / 100)
-  //   //   .style('visibility', 'visible')
-  //   //   .style('left', (event.pageX + 5) + 'px')
-  //   //   .style('top', (event.pageY + 5) + 'px');
+  showProgress() {
+    let element = document.getElementById("explProgress");
+    if (element != null) {
+      element.style.visibility = "visible";
+    }
+  }
 
-  // }
-
-  // mouseleave(d: any) {
-  //   this.tooltip
-  //     .style('visibility', 'hidden');
-  // }
+  hideProgress() {
+    let element = document.getElementById("explProgress");
+    if (element != null) {
+      element.style.visibility = "hidden";
+    }
+  }
 }
 
 

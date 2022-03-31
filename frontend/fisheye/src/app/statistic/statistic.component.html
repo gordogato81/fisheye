@@ -1,5 +1,11 @@
 <div class="container">
   <div class="graph-container">
+    <mat-progress-bar
+        color="accent"
+        mode="indeterminate"
+        id="chartProgress"
+        class="progress"
+      ></mat-progress-bar>
     <div id="chart"></div>
   </div>
   <div class="navigation-container">
@@ -107,7 +113,14 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
-
+        <mat-form-field appearance="fill">
+          <mat-label>Select Scaling</mat-label>
+          <mat-select [disabled]="chart == 'bar'" [(value)]='lineScale'>
+            <mat-option value="linear">Linear Scaling</mat-option>
+            <mat-option value="sqrt">Square Root Scaling</mat-option>
+            <mat-option value="log">Logarithmic Scaling</mat-option>
+          </mat-select>
+        </mat-form-field>
         <mat-divider></mat-divider>
       </div>
       <div class="maps-container" id="legendContainer">

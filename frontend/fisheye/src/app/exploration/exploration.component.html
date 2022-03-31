@@ -27,5 +27,11 @@
 </mat-card>
 <mat-slider id="slider" thumbLabel (change)="onInputChange($event)" [displayWith]="sliderDisplay" [min]="1" [max]="sliderMax" step="1" [value]="sliderVal"></mat-slider>
 <!-- <ngx-slider [options]="options" formControlName="sliderControl"></ngx-slider> -->
+<mat-progress-bar
+        color="accent"
+        mode="indeterminate"
+        id="explProgress"
+        class="progress"
+      ></mat-progress-bar>
 <div id="map"></div>
 <div id="tooltip"></div> 
