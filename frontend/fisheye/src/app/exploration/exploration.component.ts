@@ -41,6 +41,7 @@ export class ExplorationComponent implements OnInit {
   sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) };
   sliderMax: number = 1461; //3288 = 2012 - 2020
   sliderVal: number = 1;
+  mapScale: string = 'log';
   minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
   range = new FormGroup({
@@ -213,8 +214,15 @@ export class ExplorationComponent implements OnInit {
       if (!this.legend.selectAll('text').empty()) this.legend.selectAll('text').remove();
       const legendheight = 345;
       const legendwidth = 25;
-
-      let colorScale = d3.scaleSymlog();
+      let colorScale: any;
+      if (this.mapScale == 'log') {
+        colorScale = d3.scaleSymlog();
+      } else if (this.mapScale == 'sqrt') {
+        colorScale = d3.scaleSqrt();
+      } else if (this.mapScale == 'linear') {
+        colorScale = d3.scaleLinear();
+      }
+      
       colorScale.domain([0, this.dMax]).range([0, legendheight])
       const coloraxis = d3.axisLeft(colorScale).ticks(5);
       this.legend.append("defs")
@@ -259,7 +267,14 @@ export class ExplorationComponent implements OnInit {
 
 
     function draw(d: tmp) {
-      let colorMap = d3.scaleSymlog<string, number>();
+      let colorMap: any;
+      if (that.mapScale == 'log') {
+        colorMap = d3.scaleSymlog<string, number>();
+      } else if (that.mapScale == 'sqrt') {
+        colorMap = d3.scaleSqrt();
+      } else if (that.mapScale == 'linear') {
+        colorMap = d3.scaleLinear();
+      }
       colorMap.domain([0, that.dMax]).range(["orange", "purple"])
       let newX;
       const newY = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
@@ -355,7 +370,7 @@ export class ExplorationComponent implements OnInit {
 
   truncate(x: number) {
     if (x < 0) {
-      x = Math.ceil(x * 10) / 10;
+      x = Math.ceil((x - 0.1) * 10) / 10;
     } else if (x >= 0) {
       x = Math.floor(x * 10) / 10;
     }
