@@ -121,13 +121,18 @@ export class StatisticComponent implements OnInit {
     this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country, bl, tr).subscribe(data => {
       this.hideProgress();
       console.log(data);
+      
       const legendContainer = document.getElementById('legendContainer')!
+      const graphContainer = document.getElementById('graphContainer')!;
       const legendWidth = legendContainer.offsetWidth;
       const legendheight = legendContainer.offsetHeight;
+      this.width = graphContainer.offsetWidth - this.margin.left - this.margin.right;
+      this.height = graphContainer.offsetHeight - this.margin.top - this.margin.bottom;
 
       if (!d3.select('#chart').select('svg').empty()) d3.select('#chart').select('svg').remove(); //removes previous chart if it exists
       if (!d3.select('#chartLegend').selectAll('text').empty()) d3.select('#chartLegend').selectAll('text').remove(); //removes previous chart if it exists
-      if (!d3.select('#chartLegend').selectAll('circle').empty()) d3.select('#chartLegend').selectAll('circle').remove(); //removes previous chart if it exists
+      if (!d3.select('#chartLegend').selectAll('circle').empty()) d3.select('#chartLegend').selectAll('circle').remove();
+      if (!d3.select('#chart').select('div').empty()) d3.select('#chart').select('div').remove();
       const svg = d3.select('#chart')
         .append("svg")
         .attr("width", this.width + this.margin.left + this.margin.right)
@@ -135,6 +140,15 @@ export class StatisticComponent implements OnInit {
         .append("g")
         .attr("transform",
           "translate(" + this.margin.left + "," + this.margin.top + ")");
+      const tooltip = d3.select("#chart")
+        .append('div')
+        .attr('z-index', 999)
+        .style('visibility', 'hidden')
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "5px")
+        .style("padding", "10px");
 
       const legendSVG = d3.select('#chartLegend')
         .attr('height', legendheight * 2 / 3)
@@ -200,7 +214,9 @@ export class StatisticComponent implements OnInit {
           return "translate(" + xScale(d.x0) + "," + yScale(d.tfh) + ")";
         })
         .attr("width", function (d) { return xScale(d.x1) - xScale(d.x0) - 1; })
-        .attr("height", function (d) { return that.height - yScale(d.tfh); });
+        .attr("height", function (d) { return that.height - yScale(d.tfh); })
+        .on('pointermove', (event, d) => mousemove(event, d))
+        .on('pointerout', mouseleave);
 
       svg.append("g")
         .attr("transform", "translate(0," + this.height + ")")
@@ -209,6 +225,22 @@ export class StatisticComponent implements OnInit {
       // add the y Axis
       svg.append("g")
         .call(d3.axisLeft(yScale));
+
+      function mousemove(event: PointerEvent, d: any) {
+        tooltip
+          .style("position", "absolute")
+          .style('z-index', 9999)
+          .style('visibility', 'visible')
+          .style('left', event.pageX + 20 + "px")
+          .style('top', event.pageY + 20 + "px")
+          .html('Start: ' + that.dateToStr(d.x0) + '<br>'
+            + 'End: ' + that.dateToStr(d.x1) + '<br>'
+            + country + ': ' + Math.round(d.tfh * 100) / 100);
+
+      }
+      function mouseleave() {
+        if (tooltip) tooltip.style('visibility', 'hidden');
+      }
     });
   }
 
@@ -244,13 +276,17 @@ export class StatisticComponent implements OnInit {
       this.hideProgress();
       console.log(data);
       //console.log(domain);
-      const legendContainer = document.getElementById('legendContainer')!
+      const legendContainer = document.getElementById('legendContainer')!;
+      const graphContainer = document.getElementById('graphContainer')!;
       const legendWidth = legendContainer.offsetWidth;
       const legendheight = legendContainer.offsetHeight;
+      this.width = graphContainer.offsetWidth - this.margin.left - this.margin.right;
+      this.height = graphContainer.offsetHeight - this.margin.top - this.margin.bottom;
       if (!d3.select('#chart').select('svg').empty()) d3.select('#chart').select('svg').remove(); //removes previous chart if it exists
       if (!d3.select('#chartLegend').selectAll('text').empty()) d3.select('#chartLegend').selectAll('text').remove();
-      if (!d3.select('#chartLegend').selectAll('circle').empty()) d3.select('#chartLegend').selectAll('circle').remove(); 
-      if (!d3.select('#chart').select('svg').selectAll('rect').empty()) d3.select('#chart').select('svg').selectAll('rect').remove(); 
+      if (!d3.select('#chartLegend').selectAll('circle').empty()) d3.select('#chartLegend').selectAll('circle').remove();
+      if (!d3.select('#chart').select('svg').selectAll('rect').empty()) d3.select('#chart').select('svg').selectAll('rect').remove();
+      if (!d3.select('#chart').select('div').empty()) d3.select('#chart').select('div').remove();
       const svg = d3.select('#chart')
         .append("svg")
         .attr("width", this.width + this.margin.left + this.margin.right)
