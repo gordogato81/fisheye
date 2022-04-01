@@ -115,7 +115,7 @@ export class ExplorationComponent implements OnInit {
       .style("border-width", "1px")
       .style("border-radius", "5px")
       .style("padding", "10px")
-      .style('z-index', 1000000);
+      .style('z-index', 9999);
     this.legend = d3.select('#legend')
       .attr('height', 360)
       .attr('width', 90)
@@ -275,7 +275,7 @@ export class ExplorationComponent implements OnInit {
       } else if (that.mapScale == 'linear') {
         colorMap = d3.scaleLinear();
       }
-      colorMap.domain([0, that.dMax]).range(["orange", "purple"])
+      colorMap.domain([0, that.dMax]).range(["orange", "purple"]);
       let newX;
       const newY = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
       context.beginPath();

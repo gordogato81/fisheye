@@ -8,7 +8,7 @@ import { ComparisonService } from '../service/comparison.service';
 import { range } from 'd3';
 
 import countryJson from '../../assets/json/countries.json';
-import { forkJoin, map, Observable, startWith } from 'rxjs';
+import { forkJoin, map, Observable, startWith, Subscription } from 'rxjs';
 
 declare var renderQueue: any;
 
@@ -25,12 +25,18 @@ export class ComparisonComponent implements OnInit {
   private map2!: L.Map;
   private map3!: L.Map;
   private map4!: L.Map;
+  private tooltip1: any;
+  private tooltip2: any;
+  private tooltip3: any;
+  private tooltip4: any;
   private bl: [number, number] = [0, 0];
   private tr: [number, number] = [10, 10];
   private totalFishingMax = 5486.0071;
   private legend: any;
   private min_color = 'orange';
   private max_color = 'purple';
+  subs: Subscription = new Subscription();
+  mapsScale: string = 'log'
   minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
   range1 = new FormGroup({
@@ -63,10 +69,8 @@ export class ComparisonComponent implements OnInit {
   options4: Country[] = countryJson;
   filteredOptions4!: Observable<Country[]>;
 
-
-
   ngOnInit(): void {
-
+    const that = this;
     this.showProgress1();
     this.showProgress2();
     this.showProgress3();
@@ -118,7 +122,7 @@ export class ComparisonComponent implements OnInit {
     //   attribution:
     //     '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
     // })
-    const mapOptions = { dragging: false, zoomControl: false, scrollWheelZoom: false, attributionControl: false }
+    const mapOptions = { dragging: false, zoomControl: false, scrollWheelZoom: false, doubleClickZoom: false, attributionControl: false }
     this.map1 = L.map('map1', mapOptions).setView([18, 0], 2.5);
     this.map2 = L.map('map2', mapOptions).setView([18, 0], 2.5);
     this.map3 = L.map('map3', mapOptions).setView([18, 0], 2.5);
@@ -146,11 +150,54 @@ export class ComparisonComponent implements OnInit {
     this.range3.setValue({ start: '2020-07-01', end: '2020-07-31' });
     this.range4.setValue({ start: '2020-10-01', end: '2020-10-31' });
 
+    // console.log(this.navigation.getCenter());
+    // this.cs.setCenter(this.navigation.getCenter());
+    // this.cs.setZoom(this.navigation.getZoom());
+
     const pixelMap = this.map1.getPixelBounds();
     const pixelBounds = this.navigation.getPixelBounds();
 
     this.getData(this.bl, this.tr);
-
+    this.tooltip1 = d3.select('#tooltip1')
+      .attr("class", "leaflet-interactive")
+      .style('visibility', 'hidden')
+      .style('position', 'absolute')
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "5px")
+      .style("padding", "10px")
+      .style('z-index', 9999);
+    this.tooltip2 = d3.select('#tooltip2')
+      .attr("class", "leaflet-interactive")
+      .style('visibility', 'hidden')
+      .style('position', 'absolute')
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "5px")
+      .style("padding", "10px")
+      .style('z-index', 9999);
+    this.tooltip3 = d3.select('#tooltip3')
+      .attr("class", "leaflet-interactive")
+      .style('visibility', 'hidden')
+      .style('position', 'absolute')
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "5px")
+      .style("padding", "10px")
+      .style('z-index', 9999);
+    this.tooltip4 = d3.select('#tooltip4')
+      .attr("class", "leaflet-interactive")
+      .style('visibility', 'hidden')
+      .style('position', 'absolute')
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "5px")
+      .style("padding", "10px")
+      .style('z-index', 9999);
     this.legend = d3.select('#clegend')
       .attr('height', 360)
       .attr('width', 70);
@@ -173,14 +220,11 @@ export class ComparisonComponent implements OnInit {
       this.cs.setZoom(this.navigation.getZoom());
     });
 
-    // this.navigation.on('mousemove', event => {
-    //   console.log(event)
-    // })
 
   }
   truncate(x: number) {
     if (x < 0) {
-      x = Math.ceil(x * 10) / 10;
+      x = Math.ceil((x - 0.1) * 10) / 10;
     } else if (x >= 0) {
       x = Math.floor(x * 10) / 10;
     }
@@ -253,16 +297,16 @@ export class ComparisonComponent implements OnInit {
     this.showProgress2();
     this.showProgress3();
     this.showProgress4();
-    const map1 = <L.Map>this.cs.getMap(1);
-    const map2 = <L.Map>this.cs.getMap(2);
-    const map3 = <L.Map>this.cs.getMap(3);
-    const map4 = <L.Map>this.cs.getMap(4);
+    this.map1 = <L.Map>this.cs.getMap(1);
+    this.map2 = <L.Map>this.cs.getMap(2);
+    this.map3 = <L.Map>this.cs.getMap(3);
+    this.map4 = <L.Map>this.cs.getMap(4);
     const zoom = this.cs.getZoom()
     const center = this.cs.getCenter();
-    map1.setView(center, zoom, { animate: false });
-    map2.setView(center, zoom, { animate: false });
-    map3.setView(center, zoom, { animate: false });
-    map4.setView(center, zoom, { animate: false });
+    this.map1.setView(center, zoom, { animate: false });
+    this.map2.setView(center, zoom, { animate: false });
+    this.map3.setView(center, zoom, { animate: false });
+    this.map4.setView(center, zoom, { animate: false });
     // const bounds = map1.getBounds();
     // this.bl[0] = bounds.getSouth();
     // this.bl[1] = bounds.getWest();
@@ -288,10 +332,10 @@ export class ComparisonComponent implements OnInit {
 
   getData(bl: [number, number], tr: [number, number]) {
     const that = this;
-    const map1 = <L.Map>this.cs.getMap(1);
-    const map2 = <L.Map>this.cs.getMap(2);
-    const map3 = <L.Map>this.cs.getMap(3);
-    const map4 = <L.Map>this.cs.getMap(4);
+    this.map1 = <L.Map>this.cs.getMap(1);
+    this.map2 = <L.Map>this.cs.getMap(2);
+    this.map3 = <L.Map>this.cs.getMap(3);
+    this.map4 = <L.Map>this.cs.getMap(4);
     const context1 = this.cs.getContext(1);
     const context2 = this.cs.getContext(2);
     const context3 = this.cs.getContext(3);
@@ -321,9 +365,20 @@ export class ComparisonComponent implements OnInit {
     let max2: number;
     let max3: number;
     let max4: number;
-    let colorMap = d3.scaleSymlog<string, number>();
+    let colorMap: any;
+    if (that.mapsScale == 'log') {
+      colorMap = d3.scaleSymlog<string, number>();
+    } else if (that.mapsScale == 'sqrt') {
+      colorMap = d3.scaleSqrt();
+    } else if (that.mapsScale == 'linear') {
+      colorMap = d3.scaleLinear();
+    }
 
     const values$ = forkJoin([data1$, data2$, data3$, data4$]).subscribe((data) => {
+      this.cs.setData(data[0], 1);
+      this.cs.setData(data[1], 2);
+      this.cs.setData(data[2], 3);
+      this.cs.setData(data[3], 4);
       // >>> removing previously rendered items >>>
       if (!this.legend.selectAll('rect').empty()) this.legend.selectAll('rect').remove();
       if (!this.legend.selectAll('g').empty()) this.legend.selectAll('g').remove();
@@ -403,11 +458,11 @@ export class ComparisonComponent implements OnInit {
 
       // >>> canvas rendering functions >>>
       function draw1(d: tmp) {
-        const newX = map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-        const newY = map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+        const newX = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+        const newY = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
         context1.beginPath();
         context1.fillStyle = colorMap(d.tfh);
-        context1.rect(newX, newY, that.detSize(d, map1)[0], that.detSize(d, map1)[1]);
+        context1.rect(newX, newY, that.detSize(d, that.map1)[0], that.detSize(d, that.map1)[1]);
         context1.fill();
         context1.closePath();
       }
@@ -417,11 +472,11 @@ export class ComparisonComponent implements OnInit {
       }
 
       function draw2(d: tmp) {
-        const newX = map2.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-        const newY = map2.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+        const newX = that.map2.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+        const newY = that.map2.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
         context2.beginPath();
         context2.fillStyle = colorMap(d.tfh);
-        context2.rect(newX, newY, that.detSize(d, map2)[0], that.detSize(d, map2)[1]);
+        context2.rect(newX, newY, that.detSize(d, that.map2)[0], that.detSize(d, that.map2)[1]);
         context2.fill();
         context2.closePath();
       }
@@ -431,11 +486,11 @@ export class ComparisonComponent implements OnInit {
       }
 
       function draw3(d: tmp) {
-        const newX = map3.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-        const newY = map3.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+        const newX = that.map3.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+        const newY = that.map3.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
         context3.beginPath();
         context3.fillStyle = colorMap(d.tfh);
-        context3.rect(newX, newY, that.detSize(d, map3)[0], that.detSize(d, map3)[1]);
+        context3.rect(newX, newY, that.detSize(d, that.map3)[0], that.detSize(d, that.map3)[1]);
         context3.fill();
         context3.closePath();
       }
@@ -445,11 +500,11 @@ export class ComparisonComponent implements OnInit {
       }
 
       function draw4(d: tmp) {
-        const newX = map4.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-        const newY = map4.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+        const newX = that.map4.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
+        const newY = that.map4.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
         context4.beginPath();
         context4.fillStyle = colorMap(d.tfh);
-        context4.rect(newX, newY, that.detSize(d, map4)[0], that.detSize(d, map4)[1]);
+        context4.rect(newX, newY, that.detSize(d, that.map4)[0], that.detSize(d, that.map4)[1]);
         context4.fill();
         context4.closePath();
       }
@@ -458,7 +513,108 @@ export class ComparisonComponent implements OnInit {
         context4.clearRect(0, 0, canvas4.attr("width"), canvas4.attr("height"));
       }
       // <<< canvas rendering functions <<<
+
+      this.map1 = this.cs.getMap(1)!;
+      this.map2 = this.cs.getMap(2)!;
+      this.map3 = this.cs.getMap(3)!;
+      this.map4 = this.cs.getMap(4)!;
+
+      this.map1.on('click', function (event: L.LeafletMouseEvent) {
+        const data = that.cs.getData(1);
+        const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
+        const lng = that.truncate(event.latlng.lng);
+
+        if (!(data === undefined)) {
+          const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng);
+          if (!(d === undefined)) {
+            that.tooltip1
+              .style("position", "absolute")
+              .style('z-index', 9999)
+              .style('visibility', 'visible')
+              .style('left', event.originalEvent.pageX + 20 + "px")
+              .style('top', event.originalEvent.pageY + 20 + "px")
+              .html('Latitude: ' + d.lat + '<br>'
+                + 'Longitude: ' + d.lon + '<br>'
+                + 'Fishing Hours: ' + Math.round(d.tfh * 100) / 100);
+          } else {
+            that.tooltip1.style('visibility', 'hidden');
+          }
+        }
+      });
+
+      this.map2.on('click', function (event: L.LeafletMouseEvent) {
+        const data = that.cs.getData(2);
+        const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
+        const lng = that.truncate(event.latlng.lng);
+
+        if (!(data === undefined)) {
+          const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng);
+          if (!(d === undefined)) {
+            that.tooltip2
+              .style("position", "absolute")
+              .style('z-index', 9999)
+              .style('visibility', 'visible')
+              .style('left', event.originalEvent.pageX + 20 + "px")
+              .style('top', event.originalEvent.pageY + 20 + "px")
+              .html('Latitude: ' + d.lat + '<br>'
+                + 'Longitude: ' + d.lon + '<br>'
+                + 'Fishing Hours: ' + Math.round(d.tfh * 100) / 100);
+          } else {
+            that.tooltip2.style('visibility', 'hidden');
+          }
+        }
+      });
+
+      this.map3.on('click', function (event: L.LeafletMouseEvent) {
+        const data = that.cs.getData(3);
+        const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
+        const lng = that.truncate(event.latlng.lng);
+
+        if (!(data === undefined)) {
+          const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng);
+          if (!(d === undefined)) {
+            that.tooltip3
+              .style("position", "absolute")
+              .style('z-index', 9999)
+              .style('visibility', 'visible')
+              .style('left', event.originalEvent.pageX + 20 + "px")
+              .style('top', event.originalEvent.pageY + 20 + "px")
+              .html('Latitude: ' + d.lat + '<br>'
+                + 'Longitude: ' + d.lon + '<br>'
+                + 'Fishing Hours: ' + Math.round(d.tfh * 100) / 100);
+          } else {
+            that.tooltip3.style('visibility', 'hidden');
+          }
+        }
+      });
+
+      this.map4.on('click', function (event: L.LeafletMouseEvent) {
+        const data = that.cs.getData(4);
+        const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
+        const lng = that.truncate(event.latlng.lng);
+
+        if (!(data === undefined)) {
+          const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng);
+          if (!(d === undefined)) {
+            that.tooltip4
+              .style("position", "absolute")
+              .style('z-index', 9999)
+              .style('visibility', 'visible')
+              .style('left', event.originalEvent.pageX + 20 + "px")
+              .style('top', event.originalEvent.pageY + 20 + "px")
+              .html('Latitude: ' + d.lat + '<br>'
+                + 'Longitude: ' + d.lon + '<br>'
+                + 'Fishing Hours: ' + Math.round(d.tfh * 100) / 100);
+          } else {
+            that.tooltip4.style('visibility', 'hidden');
+          }
+        }
+      });
+
     });
+    this.subs.add(values$);
+    this.cs.setSub(this.subs);
+
   }
 
   detSize(d: any, map: any) {

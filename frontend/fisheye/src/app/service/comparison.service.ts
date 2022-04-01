@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { latLng } from 'leaflet';
+import { Observable, Subject, Subscription, SubscriptionLike } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,8 +10,8 @@ export class ComparisonService {
   constructor() { }
 
   navigation!: L.Map;
-  center: any;
-  zoom: any;
+  center: L.LatLng = latLng(18, 0);
+  zoom: number = 2.5;
   bl: [number, number] = [0, 0]
   tr: [number, number] = [0, 0]
   map1!: L.Map;
@@ -41,7 +42,7 @@ export class ComparisonService {
   init2: boolean = false;
   init3: boolean = false;
   init4: boolean = false;
-
+  sub: Subscription = new Subscription();
 
   public setCenter(center: any) {
     this.center = center;
@@ -163,15 +164,27 @@ export class ComparisonService {
     return undefined;
   }
 
-  public setLoaded(id: number) {
-    if (id == 1) {
-      this.init1 = true;
-    } else if (id == 2) {
-      this.init2 = true;
-    } else if (id == 3) {
-      this.init3 = true;
-    } else if (id == 4) {
-      this.init4 = true;
+  public setLoaded(id: number, b: boolean) {
+    if (b) {
+      if (id == 1) {
+        this.init1 = true;
+      } else if (id == 2) {
+        this.init2 = true;
+      } else if (id == 3) {
+        this.init3 = true;
+      } else if (id == 4) {
+        this.init4 = true;
+      }
+    } else if(!b) {
+      if (id == 1) {
+        this.init1 = false;
+      } else if (id == 2) {
+        this.init2 = false;
+      } else if (id == 3) {
+        this.init3 = false;
+      } else if (id == 4) {
+        this.init4 = false;
+      }
     }
   }
 
@@ -249,5 +262,13 @@ export class ComparisonService {
 
   public getTr() {
     return this.tr;
+  }
+
+  public setSub(sub: Subscription) {
+    this.sub = sub;
+  }
+
+  public getSub() {
+    return this.sub;
   }
 }

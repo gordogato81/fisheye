@@ -1,3 +1,7 @@
+<div id="tooltip1" class="tooltip"></div>
+<div id="tooltip2" class="tooltip"></div>
+<div id="tooltip3" class="tooltip"></div>
+<div id="tooltip4" class="tooltip"></div>
 <div class="container" id="con">
   <mat-card id="legendCard">
     <!-- <a id="legendTitle">Fishing Hours</a> -->
@@ -272,6 +276,14 @@
       </div>
 
       <div class="button-container">
+        <mat-form-field appearance="fill" style="margin-bottom: -1.25em">
+          <mat-label>Select Scaling</mat-label>
+          <mat-select [(value)]='mapsScale'>
+            <mat-option value="linear">Linear Scaling</mat-option>
+            <mat-option value="sqrt">Square Root Scaling</mat-option>
+            <mat-option value="log">Logarithmic Scaling</mat-option>
+          </mat-select>
+        </mat-form-field>
         <button mat-raised-button id="updateButton" (click)="clickUpdate()">
           Update Visualization
         </button>
