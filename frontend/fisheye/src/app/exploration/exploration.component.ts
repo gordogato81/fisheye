@@ -12,7 +12,6 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
 import countryJson from '../../assets/json/countries.json';
-// import faoJson from '../../assets/json/FAO_AREAS_CWP.json';
 import { tmp, Country, geo } from '../interfaces';
 declare var renderQueue: any;
 

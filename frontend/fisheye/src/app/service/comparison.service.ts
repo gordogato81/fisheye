@@ -42,6 +42,10 @@ export class ComparisonService {
   init2: boolean = false;
   init3: boolean = false;
   init4: boolean = false;
+  geoJson1: any;
+  geoJson2: any;
+  geoJson3: any;
+  geoJson4: any;
   sub: Subscription = new Subscription();
 
   public setCenter(center: any) {
@@ -175,7 +179,7 @@ export class ComparisonService {
       } else if (id == 4) {
         this.init4 = true;
       }
-    } else if(!b) {
+    } else if (!b) {
       if (id == 1) {
         this.init1 = false;
       } else if (id == 2) {
@@ -270,5 +274,30 @@ export class ComparisonService {
 
   public getSub() {
     return this.sub;
+  }
+
+  public getJson(id: number) {
+    if (id == 1) {
+      return this.geoJson1;
+    } else if (id == 2) {
+      return this.geoJson2;
+    } else if (id == 3) {
+      return this.geoJson3;
+    } else if (id == 4) {
+      return this.geoJson4;
+    }
+
+  }
+
+  public setJson(json: any, id: number) {
+    if (id == 1) {
+      this.geoJson1 = json;
+    } else if (id == 2) {
+      this.geoJson2 = json;
+    } else if (id == 3) {
+      this.geoJson3 = json;
+    } else if (id == 4) {
+      this.geoJson4 = json;
+    }
   }
 }

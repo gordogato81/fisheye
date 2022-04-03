@@ -35,10 +35,13 @@ export class ComparisonComponent implements OnInit {
   private legend: any;
   private min_color = 'orange';
   private max_color = 'purple';
+  private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=json';
   subs: Subscription = new Subscription();
   mapsScale: string = 'log'
   minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
+  faoChecked = false;
+  faoDisabled = true;
   range1 = new FormGroup({
     start: new FormControl(),
     end: new FormControl(),
@@ -136,6 +139,28 @@ export class ComparisonComponent implements OnInit {
     this.initMap(3);
     this.initMap(4);
     // Stop that's enough maps
+
+    d3.json(this.faoURL).then((data: any) => {
+      this.faoDisabled = false;
+      const jsonOptions = {
+        style: {
+          color: 'grey',
+          opacity: 0.7,
+          fillColor: 'grey',
+          fillOpacity: 0.1,
+        }
+      };
+      const jsonLayer1 = L.geoJSON(data, jsonOptions);
+      const jsonLayer2 = L.geoJSON(data, jsonOptions);
+      const jsonLayer3 = L.geoJSON(data, jsonOptions);
+      const jsonLayer4 = L.geoJSON(data, jsonOptions);
+
+      
+      this.cs.setJson(jsonLayer1, 1);
+      this.cs.setJson(jsonLayer2, 2);
+      this.cs.setJson(jsonLayer3, 3);
+      this.cs.setJson(jsonLayer4, 4);
+    });
 
     //getting inital bounds;
     const bounds = this.map1.getBounds();
@@ -656,6 +681,29 @@ export class ComparisonComponent implements OnInit {
 
   dateToStr(d: Date) {
     return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
+  }
+  
+  faoChange(event: any) {
+    this.map1 = this.cs.getMap(1)!;
+    this.map2 = this.cs.getMap(2)!;
+    this.map3 = this.cs.getMap(3)!;
+    this.map4 = this.cs.getMap(4)!;
+    const jsonLayer1 = this.cs.getJson(1);
+    const jsonLayer2 = this.cs.getJson(2);
+    const jsonLayer3 = this.cs.getJson(3);
+    const jsonLayer4 = this.cs.getJson(4);
+    
+    if (this.faoChecked) {
+      jsonLayer1.addTo(this.map1);
+      jsonLayer2.addTo(this.map2);
+      jsonLayer3.addTo(this.map3);
+      jsonLayer4.addTo(this.map4);
+    } else if (!this.faoChecked) {
+      jsonLayer1.removeFrom(this.map1);
+      jsonLayer2.removeFrom(this.map2);
+      jsonLayer3.removeFrom(this.map3);
+      jsonLayer4.removeFrom(this.map4);
+    }
   }
 
   // getData1(start: string, end: string, bl: [number, number], tr: [number, number]) {
