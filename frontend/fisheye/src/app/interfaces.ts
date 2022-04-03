@@ -45,3 +45,8 @@ export interface bin {
     x0: Date,
     x1: Date
 }
+
+export interface geo {
+    type: "FeatureCollection",
+    features: []
+}

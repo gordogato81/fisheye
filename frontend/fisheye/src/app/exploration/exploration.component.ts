@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { APIService } from '../service/api.service';
 import * as L from 'leaflet';
 import * as d3 from 'd3';
-import { tmp, Country } from '../interfaces';
+
 import { MatSliderChange } from '@angular/material/slider';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ExplorationService } from '../service/exploration.service';
@@ -12,7 +12,8 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
 import countryJson from '../../assets/json/countries.json';
-
+// import faoJson from '../../assets/json/FAO_AREAS_CWP.json';
+import { tmp, Country, geo } from '../interfaces';
 declare var renderQueue: any;
 
 @Component({
@@ -38,6 +39,7 @@ export class ExplorationComponent implements OnInit {
   private intervalLength: number = 5;
   private min_color = 'orange';
   private max_color = 'purple';
+  private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=json';
   sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) };
   sliderMax: number = 1461; //3288 = 2012 - 2020
   sliderVal: number = 1;
@@ -48,8 +50,8 @@ export class ExplorationComponent implements OnInit {
     start: new FormControl(),
     end: new FormControl(),
   });
-
-
+  faoChecked = false;
+  faoDisabled = true;
   countryControl = new FormControl();
   options1: Country[] = countryJson;
   filteredOptions!: Observable<Country[]>;
@@ -76,7 +78,7 @@ export class ExplorationComponent implements OnInit {
 
     const mapOptions = {
       worldCopyJump: true,
-      // crs: L.CRS.EPSG3395
+      // crs: L.CRS.EPSG4326
       // preferCanvas: true 
     };
     this.map = L.map('map', mapOptions).setView([18, 0], 2.5); // defaults to world view 
@@ -84,6 +86,7 @@ export class ExplorationComponent implements OnInit {
     const tilelayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       minZoom: 2,
       maxZoom: 10,
+      // crs: L.CRS.EPSG4326,
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     });
@@ -101,7 +104,7 @@ export class ExplorationComponent implements OnInit {
     this.map.setMaxBounds(L.latLngBounds(bl, tr));
     this.es.setMap(this.map);
 
-    this.canvas = d3.select(this.map.getPanes().overlayPane).select('canvas');
+    this.canvas = d3.select(this.map.getPanes().overlayPane).select('canvas').attr('z-index', 300);
     this.es.setCanvas(this.canvas);
 
     this.context = this.canvas.node().getContext('2d');
@@ -126,7 +129,21 @@ export class ExplorationComponent implements OnInit {
 
     const start = "2020-03-01";
     const end = "2020-03-05";
-
+    
+    d3.json(this.faoURL).then((data: any) => {
+      this.faoDisabled = false;
+      const jsonLayer = L.geoJSON(data,
+        {
+          style: {
+            color: 'grey',
+            opacity: 0.7,
+            fillColor: 'grey',
+            fillOpacity: 0.1,
+          }
+        });
+      
+      this.ds.setJson(jsonLayer);
+    });
     this.getData(start, end);
     this.es.setInterval(this.dateRangeToInterval(new Date(start), new Date(end)));
     this.sliderVal = this.dateToVal(new Date(start));
@@ -222,7 +239,7 @@ export class ExplorationComponent implements OnInit {
       } else if (this.mapScale == 'linear') {
         colorScale = d3.scaleLinear();
       }
-      
+
       colorScale.domain([0, this.dMax]).range([0, legendheight])
       const coloraxis = d3.axisLeft(colorScale).ticks(5);
       this.legend.append("defs")
@@ -436,6 +453,18 @@ export class ExplorationComponent implements OnInit {
     let element = document.getElementById("explProgress");
     if (element != null) {
       element.style.visibility = "hidden";
+    }
+  }
+
+  faoChange(event: any) {
+    this.map = this.es.getMap();
+    const jsonLayer = this.ds.getJson();
+    
+    if (this.faoChecked) {
+      jsonLayer.addTo(this.map);
+      jsonLayer.setZIndex(99);
+    } else if (!this.faoChecked) {
+      jsonLayer.removeFrom(this.map);
     }
   }
 }

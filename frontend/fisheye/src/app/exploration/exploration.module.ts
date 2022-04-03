@@ -12,6 +12,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
 
 const routes: Routes = [
   { path: '', component: ExplorationComponent }
@@ -31,7 +33,9 @@ const routes: Routes = [
     MatSelectModule,
     MatAutocompleteModule,
     MatInputModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatCheckboxModule,
+    FormsModule
   ]
 })
 export class ExplorationModule { }

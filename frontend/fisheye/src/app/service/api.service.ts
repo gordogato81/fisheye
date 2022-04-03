@@ -9,6 +9,7 @@ import midData from '../../assets/json/midNew.json'
   providedIn: 'root',
 })
 export class APIService {
+  geoJson: any;
 
   constructor(private http: HttpClient) { }
 
@@ -217,5 +218,13 @@ export class APIService {
     range[0] = range[0] * 1000000;
     range[1] = range[1] * 1000000 + 999999;
     return range;
+  }
+
+  public getJson() {
+    return this.geoJson;
+  }
+
+  public setJson(json: any) {
+    this.geoJson = json;
   }
 }

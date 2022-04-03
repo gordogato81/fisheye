@@ -53,12 +53,15 @@
   </mat-form-field>
   <mat-form-field appearance="fill" style="margin-bottom: -1.25em">
     <mat-label>Select Scaling</mat-label>
-    <mat-select [(value)]='mapScale' (valueChange)="onCountryChange($event)">
+    <mat-select [(value)]="mapScale" (valueChange)="onCountryChange($event)">
       <mat-option value="linear">Linear Scaling</mat-option>
       <mat-option value="sqrt">Square Root Scaling</mat-option>
       <mat-option value="log">Logarithmic Scaling</mat-option>
     </mat-select>
   </mat-form-field>
+  <mat-checkbox class="worldChecked" [(ngModel)]="faoChecked" (change)="faoChange($event)" [disabled]="faoDisabled"
+    >Display FAO Fishing Boundaries</mat-checkbox
+  >
 </mat-card>
 <mat-slider
   id="slider"
