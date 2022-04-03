@@ -12,7 +12,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [ComparisonComponent],
@@ -29,7 +32,10 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
     MatDividerModule,
     MatAutocompleteModule,
     MatInputModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    FormsModule
   ]
 })
 export class ComparisonModule { }

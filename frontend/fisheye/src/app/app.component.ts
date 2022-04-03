@@ -14,11 +14,11 @@ export class AppComponent {
       label: 'Exploration',
       route: 'exploration'
     }, {
-      label: 'Comparison',
-      route: 'comparison'
-    }, {
       label: 'Statistic',
       route: 'statistic'
+    }, {
+      label: 'Comparison',
+      route: 'comparison'
     },
   ];
   // activeLink = this.navLinks[0];

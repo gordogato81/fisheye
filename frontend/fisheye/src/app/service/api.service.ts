@@ -9,6 +9,7 @@ import midData from '../../assets/json/midNew.json'
   providedIn: 'root',
 })
 export class APIService {
+  geoJson: any;
 
   constructor(private http: HttpClient) { }
 
@@ -92,10 +93,10 @@ export class APIService {
   public getChartData(start?: string, stop?: string, country?: string, bl?: [number, number], tr?: [number, number]): Observable<cData[]> {
     if (start != undefined && stop != undefined && bl != undefined && tr != undefined) {
       country = country ?? 'World';
-      console.log('api: ', country)
+      // console.log('api: ', country)
       let mids = this.getMid(country);
       let groups = this.getGroups(mids);
-      console.log(groups);
+      // console.log(groups);
       let batchNum = 0;
       if (!(groups.batch1.length == 0)) batchNum += 1;
       if (!(groups.batch2.length == 0)) batchNum += 1;
@@ -217,5 +218,13 @@ export class APIService {
     range[0] = range[0] * 1000000;
     range[1] = range[1] * 1000000 + 999999;
     return range;
+  }
+
+  public getJson() {
+    return this.geoJson;
+  }
+
+  public setJson(json: any) {
+    this.geoJson = json;
   }
 }
