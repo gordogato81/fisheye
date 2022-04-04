@@ -8,7 +8,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./app.component.sass']
 })
 export class AppComponent {
-  title = 'fisheye';
+  title = 'FishingEye';
   navLinks: any[] = [
     {
       label: 'Exploration',

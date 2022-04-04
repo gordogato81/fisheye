@@ -444,7 +444,14 @@ export class ComparisonComponent implements OnInit {
       const legendwidth = 15;
 
       // >>> creating new legend >>>
-      let colorScale = d3.scaleSymlog();
+      let colorScale: any;
+      if (this.mapsScale == 'log') {
+        colorScale = d3.scaleSymlog();
+      } else if (this.mapsScale == 'sqrt') {
+        colorScale = d3.scaleSqrt();
+      } else if (this.mapsScale == 'linear') {
+        colorScale = d3.scaleLinear();
+      }
       colorScale.domain([0, this.totalFishingMax]).range([0, legendheight])
       const coloraxis = d3.axisLeft(colorScale).ticks(5);
       this.legend.append("defs")

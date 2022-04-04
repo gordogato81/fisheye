@@ -130,6 +130,7 @@ export class ExplorationComponent implements OnInit {
     const end = "2020-03-05";
     
     d3.json(this.faoURL).then((data: any) => {
+      console.log(data)
       this.faoDisabled = false;
       const jsonLayer = L.geoJSON(data,
         {
