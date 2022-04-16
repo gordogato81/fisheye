@@ -79,6 +79,7 @@ export class ComparisonComponent implements OnInit {
     this.showProgress3();
     this.showProgress4();
 
+    //Filter for the autocomplete input
     this.filteredOptions1 = this.countryControl1.valueChanges.pipe(
       startWith(''),
       map(value => (typeof value === 'string' ? value : value.name)),
@@ -99,6 +100,7 @@ export class ComparisonComponent implements OnInit {
       map(value => (typeof value === 'string' ? value : value.name)),
       map(name => (name ? this._filter(name) : this.options1.slice())),
     );
+
     // Initialize all the maps
     this.navigation = L.map('navigation').setView([18, 0], 2.5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -107,24 +109,7 @@ export class ComparisonComponent implements OnInit {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.navigation);
-    // L.svg().addTo(this.navigation);
-    // d3.select(this.navigation.getPanes().overlayPane)
-    // .select('svg')
-    // .append('rect')
-    // .attr('id', 'compBorder')
-    // .attr('width', '83.4%')
-    // .attr('height', '41.8%')
-    // .attr('y', '20.8%')
-    // .attr('x', '0.4%')
-    // .attr('fill-opacity', 0.0)
-    // .attr('stroke', 'rgb(255,168,0)')
-    // .attr('stroke-width', 3);
-    // L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
-    //   minZoom: 2,
-    //   maxZoom: 10,
-    //   attribution:
-    //     '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
-    // })
+
     const mapOptions = { dragging: false, zoomControl: false, scrollWheelZoom: false, doubleClickZoom: false, attributionControl: false }
     this.map1 = L.map('map1', mapOptions).setView([18, 0], 2.5);
     this.map2 = L.map('map2', mapOptions).setView([18, 0], 2.5);
@@ -140,6 +125,7 @@ export class ComparisonComponent implements OnInit {
     this.initMap(4);
     // Stop that's enough maps
 
+    // Acquiring geojson from FAO API
     d3.json(this.faoURL).then((data: any) => {
       this.faoDisabled = false;
       const jsonOptions = {
@@ -150,12 +136,12 @@ export class ComparisonComponent implements OnInit {
           fillOpacity: 0.1,
         }
       };
+      // creating geoJSON svg layer for each map
       const jsonLayer1 = L.geoJSON(data, jsonOptions);
       const jsonLayer2 = L.geoJSON(data, jsonOptions);
       const jsonLayer3 = L.geoJSON(data, jsonOptions);
       const jsonLayer4 = L.geoJSON(data, jsonOptions);
-
-      
+      //sending geoJSON layer information to comparison service
       this.cs.setJson(jsonLayer1, 1);
       this.cs.setJson(jsonLayer2, 2);
       this.cs.setJson(jsonLayer3, 3);
@@ -170,23 +156,20 @@ export class ComparisonComponent implements OnInit {
     this.tr[1] = bounds.getEast();
 
     //setting initial time intervals
-    this.range1.setValue({ start: '2020-01-01', end: '2020-01-31' });
-    this.range2.setValue({ start: '2020-04-01', end: '2020-04-30' });
-    this.range3.setValue({ start: '2020-07-01', end: '2020-07-31' });
-    this.range4.setValue({ start: '2020-10-01', end: '2020-10-31' });
+    this.range1.setValue({ start: '2017-01-01', end: '2020-01-31' });
+    this.range2.setValue({ start: '2018-01-01', end: '2020-01-31' });
+    this.range3.setValue({ start: '2019-01-01', end: '2020-01-31' });
+    this.range4.setValue({ start: '2020-01-01', end: '2020-01-31' });
 
-    // console.log(this.navigation.getCenter());
-    // this.cs.setCenter(this.navigation.getCenter());
-    // this.cs.setZoom(this.navigation.getZoom());
-
-    const pixelMap = this.map1.getPixelBounds();
-    const pixelBounds = this.navigation.getPixelBounds();
-
+    // initially filling maps with data
     this.getData(this.bl, this.tr);
+
+    // initallizing tool tips for each map
     this.tooltip1 = d3.select('#tooltip1')
       .attr("class", "leaflet-interactive")
       .style('visibility', 'hidden')
       .style('position', 'absolute')
+      .style('opacity', 0.7)
       .style("background-color", "white")
       .style("border", "solid")
       .style("border-width", "1px")
@@ -197,6 +180,7 @@ export class ComparisonComponent implements OnInit {
       .attr("class", "leaflet-interactive")
       .style('visibility', 'hidden')
       .style('position', 'absolute')
+      .style('opacity', 0.7)
       .style("background-color", "white")
       .style("border", "solid")
       .style("border-width", "1px")
@@ -207,6 +191,7 @@ export class ComparisonComponent implements OnInit {
       .attr("class", "leaflet-interactive")
       .style('visibility', 'hidden')
       .style('position', 'absolute')
+      .style('opacity', 0.7)
       .style("background-color", "white")
       .style("border", "solid")
       .style("border-width", "1px")
@@ -217,6 +202,7 @@ export class ComparisonComponent implements OnInit {
       .attr("class", "leaflet-interactive")
       .style('visibility', 'hidden')
       .style('position', 'absolute')
+      .style('opacity', 0.7)
       .style("background-color", "white")
       .style("border", "solid")
       .style("border-width", "1px")
@@ -227,16 +213,17 @@ export class ComparisonComponent implements OnInit {
       .attr('height', 360)
       .attr('width', 70);
 
+    // collecting/setting navigation map projection info to rely to the raster maps upon updating the visualization.
     this.navigation.on('moveend zoomend', () => {
       let bl: L.LatLng = L.latLng(0, 0),
         tr: L.LatLng = L.latLng(0, 0);
       const navBounds = this.navigation.getBounds();
       const pixelBounds = this.navigation.getPixelBounds();
       const bl1 = L.point(pixelBounds.getBottomLeft().x, (pixelBounds.getBottomLeft().y - 217)); // 217 is a hardcoded value based on the hard coded height of each container. 
-      const tr1 = L.point(pixelBounds.getTopRight().x, (pixelBounds.getTopRight().y + 217));
-      bl = this.navigation.unproject(bl1);
+      const tr1 = L.point(pixelBounds.getTopRight().x, (pixelBounds.getTopRight().y + 217)); // A dynamic solution was not found that was accurate enough to appropriately identify the lat lon position of the border container.
+      bl = this.navigation.unproject(bl1); // converting point to latlng layer point
       tr = this.navigation.unproject(tr1);
-      bl.lng = this.truncate(navBounds.getWest());
+      bl.lng = this.truncate(navBounds.getWest()); // truncating to 1 decimal place
       tr.lng = this.truncate(navBounds.getEast());
       bl.lat = this.truncate(bl.lat);
       tr.lat = this.truncate(tr.lat);
@@ -247,6 +234,7 @@ export class ComparisonComponent implements OnInit {
 
 
   }
+
   truncate(x: number) {
     if (x < 0) {
       x = Math.ceil((x - 0.1) * 10) / 10;
@@ -256,60 +244,7 @@ export class ComparisonComponent implements OnInit {
     return x
   }
 
-  showProgress1() {
-    let element = document.getElementById("progress1");
-    if (element != null) {
-      element.style.visibility = "visible";
-    }
-  }
-  showProgress2() {
-    let element = document.getElementById("progress2");
-    if (element != null) {
-      element.style.visibility = "visible";
-    }
-  }
 
-  showProgress3() {
-    let element = document.getElementById("progress3");
-    if (element != null) {
-      element.style.visibility = "visible";
-    }
-  }
-
-  showProgress4() {
-    let element = document.getElementById("progress4");
-    if (element != null) {
-      element.style.visibility = "visible";
-    }
-  }
-
-  hideProgress1() {
-    let element = document.getElementById("progress1");
-    if (element != null) {
-      element.style.visibility = "hidden";
-    }
-  }
-
-  hideProgress2() {
-    let element = document.getElementById("progress2");
-    if (element != null) {
-      element.style.visibility = "hidden";
-    }
-  }
-
-  hideProgress3() {
-    let element = document.getElementById("progress3");
-    if (element != null) {
-      element.style.visibility = "hidden";
-    }
-  }
-
-  hideProgress4() {
-    let element = document.getElementById("progress4");
-    if (element != null) {
-      element.style.visibility = "hidden";
-    }
-  }
 
   private _filter(name: string): Country[] {
     const filterValue = name.toLowerCase();
@@ -317,7 +252,9 @@ export class ComparisonComponent implements OnInit {
     return this.options1.filter(option => option.viewValue.toLowerCase().includes(filterValue));
   }
 
+  // fires when "Update Visualization button is clicked"
   clickUpdate() {
+    // unhides the progress bars for each map
     this.showProgress1();
     this.showProgress2();
     this.showProgress3();
@@ -328,21 +265,21 @@ export class ComparisonComponent implements OnInit {
     this.map4 = <L.Map>this.cs.getMap(4);
     const zoom = this.cs.getZoom()
     const center = this.cs.getCenter();
+
+    // set the view of the raster maps to fit that of the navigation
     this.map1.setView(center, zoom, { animate: false });
     this.map2.setView(center, zoom, { animate: false });
     this.map3.setView(center, zoom, { animate: false });
     this.map4.setView(center, zoom, { animate: false });
-    // const bounds = map1.getBounds();
-    // this.bl[0] = bounds.getSouth();
-    // this.bl[1] = bounds.getWest();
-    // this.tr[0] = bounds.getNorth();
-    // this.tr[1] = bounds.getEast();
 
+    // retrieving the location of the bottom left and top right corner of the border element
     this.bl = this.cs.getBl();
     this.tr = this.cs.getTr();
+    // getting and displaying the data
     this.getData(this.bl, this.tr);
   }
 
+  // initializes each raster map by adding a tile layer and a canvas
   initMap(num: number) {
     const map = <L.Map>this.cs.getMap(num);
     // 
@@ -369,10 +306,14 @@ export class ComparisonComponent implements OnInit {
     const canvas2 = this.cs.getCanvas(2);
     const canvas3 = this.cs.getCanvas(3);
     const canvas4 = this.cs.getCanvas(4);
+
+    // determining which country to grab for each map
     const country1 = this.countryControl1.value
     const country2 = this.countryControl2.value
     const country3 = this.countryControl3.value
     const country4 = this.countryControl4.value
+
+    // determining the start and end date for each map
     const start1 = new Date(Date.parse(this.range1.value.start));
     const start2 = new Date(Date.parse(this.range2.value.start));
     const start3 = new Date(Date.parse(this.range3.value.start));
@@ -382,6 +323,7 @@ export class ComparisonComponent implements OnInit {
     const end3 = new Date(Date.parse(this.range3.value.end));
     const end4 = new Date(Date.parse(this.range4.value.end));
 
+    // grabbing the data for each map from the api service and adding these to an Observable
     const data1$ = this.ds.getLcV(this.dateToStr(start1), this.dateToStr(end1), bl, tr, country1);
     const data2$ = this.ds.getLcV(this.dateToStr(start2), this.dateToStr(end2), bl, tr, country2);
     const data3$ = this.ds.getLcV(this.dateToStr(start3), this.dateToStr(end3), bl, tr, country3);
@@ -391,6 +333,8 @@ export class ComparisonComponent implements OnInit {
     let max3: number;
     let max4: number;
     let colorMap: any;
+
+    //determining the scaling factor for each map
     if (that.mapsScale == 'log') {
       colorMap = d3.scaleSymlog<string, number>();
     } else if (that.mapsScale == 'sqrt') {
@@ -399,6 +343,7 @@ export class ComparisonComponent implements OnInit {
       colorMap = d3.scaleLinear();
     }
 
+    // concatenating Observable results on completion of all calls
     const values$ = forkJoin([data1$, data2$, data3$, data4$]).subscribe((data) => {
       this.cs.setData(data[0], 1);
       this.cs.setData(data[1], 2);
@@ -410,10 +355,12 @@ export class ComparisonComponent implements OnInit {
       if (!this.legend.selectAll('text').empty()) this.legend.selectAll('text').remove();
       if (!this.legend.selectAll('defs').empty()) this.legend.selectAll('defs').remove();
 
+      // clearing any previously rendered items from the canvas
       clearContext1();
       clearContext2();
       clearContext3();
       clearContext4();
+
       this.hideProgress1();
       this.hideProgress2();
       this.hideProgress3();
@@ -421,10 +368,12 @@ export class ComparisonComponent implements OnInit {
       // <<< removing previously rendered items <<<
       console.log(data);
 
+      // >>> creating a new render queue for each map
       const render1 = new renderQueue(draw1).clear(clearContext1);
       const render2 = new renderQueue(draw2).clear(clearContext2);
       const render3 = new renderQueue(draw3).clear(clearContext3);
       const render4 = new renderQueue(draw4).clear(clearContext4);
+      // <<< creating a new render queue for each map
 
       // >>> determining the total max >>>
       max1 = d3.max(data[0], (d: any) => +d.tfh) ?? 0;
@@ -445,6 +394,8 @@ export class ComparisonComponent implements OnInit {
 
       // >>> creating new legend >>>
       let colorScale: any;
+
+      // determining which scaling factor to apply based on user selection
       if (this.mapsScale == 'log') {
         colorScale = d3.scaleSymlog();
       } else if (this.mapsScale == 'sqrt') {
@@ -492,6 +443,7 @@ export class ComparisonComponent implements OnInit {
       function draw1(d: tmp) {
         const newX = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
         const newY = that.map1.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+        // + 0.1 to the latitude as we are looking at the lower bottom left corner of each raster point whilst leaflet looks at the top left
         context1.beginPath();
         context1.fillStyle = colorMap(d.tfh);
         context1.rect(newX, newY, that.detSize(d, that.map1)[0], that.detSize(d, that.map1)[1]);
@@ -551,13 +503,16 @@ export class ComparisonComponent implements OnInit {
       this.map3 = this.cs.getMap(3)!;
       this.map4 = this.cs.getMap(4)!;
 
+      // adding tooltip on click to map 1
       this.map1.on('click', function (event: L.LeafletMouseEvent) {
         const data = that.cs.getData(1);
-        const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
+        // + 0.1 to the latitude as we are looking at the lower bottom left corner of each raster point whilst leaflet looks at the top left
+        const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100); 
         const lng = that.truncate(event.latlng.lng);
 
         if (!(data === undefined)) {
-          const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng);
+          // finding the data point that was clicked 
+          const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng); 
           if (!(d === undefined)) {
             that.tooltip1
               .style("position", "absolute")
@@ -649,47 +604,58 @@ export class ComparisonComponent implements OnInit {
 
   }
 
+  /**
+   * determines the width and height of each raster datapoint.
+   * @param d the datapoint 
+   * @param map the map the pixel is being projected on
+   * @returns pixel width (x: [0]) and height (y: [1]) of the raster datapoint
+   */
   detSize(d: any, map: any) {
     const lat: number = parseFloat(d.lat);
     const lon: number = parseFloat(d.lon);
     const zoom = map.getZoom();
     let first, second;
+
+    // adding/removing small amounts to the lat lon position to remove horizontal streak artifacts based on zoom.
     if (zoom == 2) {
-      first = L.latLng(lat - 0.01, lon); // -0.01 Removes horizontal streak artifact
+      first = L.latLng(lat - 0.01, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 3) {
-      first = L.latLng(lat - 0.03, lon); // -0.01 Removes horizontal streak artifact
+      first = L.latLng(lat - 0.03, lon); 
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 4) {
-      first = L.latLng(lat - 0.025, lon); // -0.01 Removes horizontal streak artifact
+      first = L.latLng(lat - 0.025, lon); 
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 5) {
-      first = L.latLng(lat - 0.017, lon); // -0.01 Removes horizontal streak artifact
+      first = L.latLng(lat - 0.017, lon); 
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 6) {
-      first = L.latLng(lat - 0.005, lon); // -0.01 Removes horizontal streak artifact
+      first = L.latLng(lat - 0.005, lon); 
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 7) {
       first = L.latLng(lat - 0.002, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else {
-      first = L.latLng(lat, lon); // -0.01 Removes horizontal streak artifact
+      first = L.latLng(lat, lon); 
       second = L.latLng(lat + 0.1, lon + 0.1);
     }
 
-    let diffX = Math.abs(map.latLngToContainerPoint(first).x - map.latLngToContainerPoint(second).x);
-    let diffY = Math.abs(map.latLngToContainerPoint(first).y - map.latLngToContainerPoint(second).y);
+    // determining the difference in height and width between two neighboring raster data points
+    let diffX = Math.abs(map.latLngToLayerPoint(first).x - map.latLngToLayerPoint(second).x);
+    let diffY = Math.abs(map.latLngToLayerPoint(first).y - map.latLngToLayerPoint(second).y);
+    // ensuring the minimum remains 1 pixel
     diffX = diffX < 1 ? 1 : diffX;
     diffY = diffY < 1 ? 1 : diffY;
     const size: [number, number] = [diffX, diffY];
     return size
   }
 
-
+  // converts date to a more readable string.
   dateToStr(d: Date) {
     return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
   }
-  
+
+  // add or remove FAO boundary SVG layer
   faoChange(event: any) {
     this.map1 = this.cs.getMap(1)!;
     this.map2 = this.cs.getMap(2)!;
@@ -699,7 +665,7 @@ export class ComparisonComponent implements OnInit {
     const jsonLayer2 = this.cs.getJson(2);
     const jsonLayer3 = this.cs.getJson(3);
     const jsonLayer4 = this.cs.getJson(4);
-    
+
     if (this.faoChecked) {
       jsonLayer1.addTo(this.map1);
       jsonLayer2.addTo(this.map2);
@@ -713,163 +679,57 @@ export class ComparisonComponent implements OnInit {
     }
   }
 
-  // getData1(start: string, end: string, bl: [number, number], tr: [number, number]) {
-  //   const that = this;
-  //   const id = 1;
-  //   // let dMax: number;
-  //   const map = <L.Map>this.cs.getMap(id);
-  //   const context = this.cs.getContext(id);
-  //   const canvas = this.cs.getCanvas(id);
-  //   const country = this.countryControl1.value
-  //   this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
-  //     this.hideProgress1();
-  //     this.cs.setData(data, id);
-  //     this.cs.setLoaded(id);
-  //     const render = new renderQueue(draw).clear(clearContext);
-  //     this.cs.setRenderer(render, 1);
-  //     // dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
-  //     // console.log("max1: ", dMax);
-  //     // this.cs.setMax(dMax, id);
-  //     render(data);
+  // functions for showing and hiding the progress bar
+  showProgress1() {
+    let element = document.getElementById("progress1");
+    if (element != null) {
+      element.style.visibility = "visible";
+    }
+  }
+  showProgress2() {
+    let element = document.getElementById("progress2");
+    if (element != null) {
+      element.style.visibility = "visible";
+    }
+  }
+  showProgress3() {
+    let element = document.getElementById("progress3");
+    if (element != null) {
+      element.style.visibility = "visible";
+    }
+  }
+  showProgress4() {
+    let element = document.getElementById("progress4");
+    if (element != null) {
+      element.style.visibility = "visible";
+    }
+  }
+  hideProgress1() {
+    let element = document.getElementById("progress1");
+    if (element != null) {
+      element.style.visibility = "hidden";
+    }
+  }
 
-  //     function draw(d: tmp) {
-  //       let colorMap = d3.scaleSymlog<string, number>();
-  //       //const daMax = that.maxMax();
-  //       // console.log("maxMax1: ", daMax);
-  //       colorMap.domain([0, that.totalFishingMax]).range(["orange", "purple"]);
-  //       const newX = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-  //       const newY = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-  //       context.beginPath();
-  //       context.fillStyle = colorMap(d.tfh);
-  //       context.rect(newX, newY, that.detSize(d, map)[0], that.detSize(d, map)[1]);
-  //       context.fill();
-  //       context.closePath();
-  //     }
+  hideProgress2() {
+    let element = document.getElementById("progress2");
+    if (element != null) {
+      element.style.visibility = "hidden";
+    }
+  }
 
-  //     function clearContext() {
-  //       context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
-  //     }
-  //   });
-  // }
+  hideProgress3() {
+    let element = document.getElementById("progress3");
+    if (element != null) {
+      element.style.visibility = "hidden";
+    }
+  }
 
-  // getData2(start: string, end: string, bl: [number, number], tr: [number, number]) {
-  //   const that = this;
-  //   const id = 2;
-  //   // let dMax: number;
-  //   const map = <L.Map>this.cs.getMap(id);
-  //   const context = this.cs.getContext(id);
-  //   const canvas = this.cs.getCanvas(id);
-  //   const country = this.countryControl2.value;
-  //   this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
-  //     this.hideProgress2();
-  //     this.cs.setData(data, id);
-  //     this.cs.setLoaded(id);
-  //     const render = new renderQueue(draw).clear(clearContext);
-  //     this.cs.setRenderer(render, 2);
-  //     // dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
-  //     // console.log("max2: ", dMax);
-  //     // this.cs.setMax(dMax, id);
-  //     render(data);
+  hideProgress4() {
+    let element = document.getElementById("progress4");
+    if (element != null) {
+      element.style.visibility = "hidden";
+    }
+  }
 
-  //     function draw(d: tmp) {
-  //       let colorMap = d3.scaleSymlog<string, number>();
-  //       //const daMax = that.maxMax();
-  //       // console.log("maxMax2: ", daMax);
-  //       colorMap.domain([0, that.totalFishingMax]).range(["orange", "purple"]);
-  //       const newX = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-  //       const newY = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-
-  //       context.beginPath();
-  //       context.fillStyle = colorMap(d.tfh);
-  //       context.rect(newX, newY, that.detSize(d, map)[0], that.detSize(d, map)[1]);
-  //       context.fill();
-  //       context.closePath();
-  //     }
-
-  //     function clearContext() {
-  //       context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
-  //     }
-  //   })
-  // }
-
-  // getData3(start: string, end: string, bl: [number, number], tr: [number, number]) {
-  //   const that = this;
-  //   const id = 3;
-  //   // let dMax: number;
-  //   const map = <L.Map>this.cs.getMap(id);
-  //   const context = this.cs.getContext(id);
-  //   const canvas = this.cs.getCanvas(id);
-  //   const country = this.countryControl3.value;
-  //   this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
-  //     this.hideProgress3();
-  //     this.cs.setData(data, id);
-  //     this.cs.setLoaded(id);
-  //     const render = new renderQueue(draw).clear(clearContext);
-  //     this.cs.setRenderer(render, 3);
-  //     // dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
-  //     // console.log("max3: ", dMax);
-  //     // this.cs.setMax(dMax, id);
-
-  //     render(data);
-
-  //     function draw(d: tmp) {
-  //       let colorMap = d3.scaleSymlog<string, number>();
-  //       //const daMax = that.maxMax();
-  //       // console.log("maxMax3: ", daMax);
-  //       colorMap.domain([0, that.totalFishingMax]).range(["orange", "purple"]);
-  //       const newX = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-  //       const newY = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-
-  //       context.beginPath();
-  //       context.fillStyle = colorMap(d.tfh);
-  //       context.rect(newX, newY, that.detSize(d, map)[0], that.detSize(d, map)[1]);
-  //       context.fill();
-  //       context.closePath();
-  //     }
-
-  //     function clearContext() {
-  //       context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
-  //     }
-  //   })
-  // }
-
-  // getData4(start: string, end: string, bl: [number, number], tr: [number, number]) {
-  //   const that = this;
-  //   const id = 4;
-  //   // let dMax: number;
-  //   const map = <L.Map>this.cs.getMap(id);
-  //   const context = this.cs.getContext(id);
-  //   const canvas = this.cs.getCanvas(id);
-  //   const country = this.countryControl4.value;
-  //   this.ds.getLcV(start, end, bl, tr, country).subscribe(data => {
-  //     this.hideProgress4();
-  //     this.cs.setData(data, id);
-  //     this.cs.setLoaded(id);
-  //     const render = new renderQueue(draw).clear(clearContext);
-  //     this.cs.setRenderer(render, 4);
-  //     // dMax = d3.max(data, (d: any) => +d.tfh) ?? 0;
-  //     // console.log("max4: ", dMax);
-  //     // this.cs.setMax(dMax, id);
-  //     render(data);
-  //     // console.log(data);
-  //     function draw(d: tmp) {
-  //       let colorMap = d3.scaleSymlog<string, number>();
-  //       // const daMax = that.maxMax();
-  //       // console.log("maxMax4: ", daMax);
-  //       colorMap.domain([0, that.totalFishingMax]).range(["orange", "purple"]);
-  //       const newX = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
-  //       const newY = map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
-
-  //       context.beginPath();
-  //       context.fillStyle = colorMap(d.tfh);
-  //       context.rect(newX, newY, that.detSize(d, map)[0], that.detSize(d, map)[1]);
-  //       context.fill();
-  //       context.closePath();
-  //     }
-
-  //     function clearContext() {
-  //       context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
-  //     }
-  //   });
-  // }
 }

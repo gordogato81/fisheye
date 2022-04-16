@@ -52,13 +52,8 @@ export class StatisticComponent implements OnInit {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.navigation);
-    // L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
-    //   minZoom: 2,
-    //   maxZoom: 10,
-    //   attribution:
-    //     '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
-    // })
 
+    // getting the position of the region of interest on the map when the map view stops changing
     this.navigation.on('moveend zoomend', () => {
       let bl: L.LatLng = L.latLng(0, 0),
         tr: L.LatLng = L.latLng(0, 0);
@@ -75,6 +70,7 @@ export class StatisticComponent implements OnInit {
       this.stService.setBlTr([bl.lat, bl.lng], [tr.lat, tr.lng]);
     });
 
+    // setting default values
     const start = '2020-01-01';
     const end = '2020-12-31';
     this.range1.setValue({ start: start, end: end });
@@ -82,13 +78,14 @@ export class StatisticComponent implements OnInit {
     this.callChart();
   }
 
+  /**
+   * calls chart building function for given user selected inputs
+   */
   callChart() {
     const country = this.countryControl.value;
     const countries = this.mCountries.value;
     const start = new Date(Date.parse(this.range1.value.start));
     const end = new Date(Date.parse(this.range1.value.end));
-    // const navMap = this.stService.getMap();
-    // // console.log(navMap.getBounds());
     if (this.worldChecked) {
       if (this.chart == 'bar') {
         this.fillBar(start, end, country);
@@ -106,13 +103,24 @@ export class StatisticComponent implements OnInit {
     }
   }
 
+  /**
+   * Generates bar chart, tooltip and legend for given input parameters
+   * @param start starting date 
+   * @param end end date
+   * @param country selected country
+   * @param bl bottom left corner
+   * @param tr top right corner
+   */
   fillBar(start: Date, end: Date, country: string, bl?: [number, number], tr?: [number, number]) {
     const that = this;
     this.showProgress();
+
+    // gets data from the api service and generates chart on completion
     this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country, bl, tr).subscribe(data => {
       this.hideProgress();
-      console.log(data);
+      // console.log(data);
 
+      // determining size of graph container
       const legendContainer = document.getElementById('legendContainer')!
       const graphContainer = document.getElementById('graphContainer')!;
       const legendWidth = legendContainer.offsetWidth;
@@ -120,10 +128,13 @@ export class StatisticComponent implements OnInit {
       this.width = graphContainer.offsetWidth - this.margin.left - this.margin.right;
       this.height = graphContainer.offsetHeight - this.margin.top - this.margin.bottom;
 
+      // removing any previous DOM elements related to the chart
       if (!d3.select('#chart').select('svg').empty()) d3.select('#chart').select('svg').remove(); //removes previous chart if it exists
       if (!d3.select('#chartLegend').selectAll('text').empty()) d3.select('#chartLegend').selectAll('text').remove(); //removes previous chart if it exists
       if (!d3.select('#chartLegend').selectAll('circle').empty()) d3.select('#chartLegend').selectAll('circle').remove();
       if (!d3.select('#chart').select('div').empty()) d3.select('#chart').select('div').remove();
+
+      // initializing new chart svg
       const svg = d3.select('#chart')
         .append("svg")
         .attr("width", this.width + this.margin.left + this.margin.right)
@@ -131,16 +142,20 @@ export class StatisticComponent implements OnInit {
         .append("g")
         .attr("transform",
           "translate(" + this.margin.left + "," + this.margin.top + ")");
+
+      // initializing new tooltip div
       const tooltip = d3.select("#chart")
         .append('div')
-        .attr('z-index', 999)
+        .style('z-index', 9999)
         .style('visibility', 'hidden')
+        .style('opacity', 0.7)
         .style("background-color", "white")
         .style("border", "solid")
         .style("border-width", "1px")
         .style("border-radius", "5px")
         .style("padding", "10px");
 
+      // >>> building new legend
       const legendSVG = d3.select('#chartLegend')
         .attr('height', legendheight * 2 / 3)
         .attr('width', legendWidth);
@@ -153,16 +168,20 @@ export class StatisticComponent implements OnInit {
         .attr("y", 0 + 5 * (legendheight / 100))
         .text(country).style("font-size", "15px")
         .attr("alignment-baseline", "middle");
+      // <<< 
 
+      // creating a new time scale for the x axis
       const xScale = d3.scaleTime()
         .domain([start, end])
         .range([0, this.width]);
 
 
-      //Manually type casting bin to be <cData, Date> took 4 hours to figure out
+      // Manually type casting bin to be <cData, Date> took 4 hours to figure out. Thanks @Typings/D3, great documentation /s
       const histogram = d3.bin<cData, Date>()
         .value(d => d.date)
         .domain([start, end]);
+
+      // determining binning strategy
       if (this.barAg == 'day') {
         histogram
           .thresholds(xScale.ticks(d3.timeDay));
@@ -177,7 +196,7 @@ export class StatisticComponent implements OnInit {
           .thresholds(xScale.ticks(d3.timeYear));
       }
 
-
+      // binning the data 
       const bins = histogram(data);
       const means = this.dataToBins(data, bins);
       let binSums: { x0: Date, x1: Date, tfh: number }[] = [];
@@ -186,15 +205,15 @@ export class StatisticComponent implements OnInit {
         const x1 = bins[i].x1!;
         const tfh = means[i];
         const it: { x0: Date, x1: Date, tfh: number } = { x0, x1, tfh };
-
         binSums.push(it);
       }
-      // console.log(binMean)
 
+      // creating the 
       const yScale = d3.scaleLinear()
         .domain([0, d3.max(means)!])
         .range([this.height, 0])
 
+      // building bar chart
       svg.selectAll("rect")
         .data(binSums)
         .enter().append("rect")
@@ -217,18 +236,19 @@ export class StatisticComponent implements OnInit {
       svg.append("g")
         .call(d3.axisLeft(yScale));
 
+      // displays tooltip when the moouse moves
       function mousemove(event: PointerEvent, d: any) {
         tooltip
           .style("position", "absolute")
-          .style('z-index', 9999)
           .style('visibility', 'visible')
           .style('left', event.pageX + 20 + "px")
           .style('top', event.pageY + 20 + "px")
           .html('Start: ' + that.dateToStr(d.x0) + '<br>'
             + 'End: ' + that.dateToStr(d.x1) + '<br>'
             + country + ': ' + Math.round(d.tfh * 100) / 100);
-
       }
+
+      // removes tooltip 
       function mouseleave() {
         if (tooltip) tooltip.style('visibility', 'hidden');
       }
@@ -236,11 +256,20 @@ export class StatisticComponent implements OnInit {
   }
 
 
-
+  /**
+   * Creates line chart and corresponding legend
+   * @param start starting date
+   * @param end end date
+   * @param countries selected countries
+   * @param bl bottom left corner of the navigation border
+   * @param tr top right corner of the navigation border
+   */
   fillChart(start: Date, end: Date, countries: string[], bl?: [number, number], tr?: [number, number]) {
     this.showProgress();
     const that = this;
     let joined$ = new Observable;
+
+    // getting data for each selected country and packing the request in an observable
     if (countries.length == 1) {
       const data1$ = this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), countries[0], bl, tr);
       joined$ = forkJoin([data1$]);
@@ -263,21 +292,25 @@ export class StatisticComponent implements OnInit {
       joined$ = forkJoin([]);
     }
 
+    // once all observables complete, build the chart
     joined$.subscribe((data: any) => {
       this.hideProgress();
-      console.log(data);
-      //console.log(domain);
+      // console.log(data);
       const legendContainer = document.getElementById('legendContainer')!;
       const graphContainer = document.getElementById('graphContainer')!;
       const legendWidth = legendContainer.offsetWidth;
       const legendheight = legendContainer.offsetHeight;
       this.width = graphContainer.offsetWidth - this.margin.left - this.margin.right;
       this.height = graphContainer.offsetHeight - this.margin.top - this.margin.bottom;
+
+      // remove any previously rendered chart dom elements 
       if (!d3.select('#chart').select('svg').empty()) d3.select('#chart').select('svg').remove(); //removes previous chart if it exists
       if (!d3.select('#chartLegend').selectAll('text').empty()) d3.select('#chartLegend').selectAll('text').remove();
       if (!d3.select('#chartLegend').selectAll('circle').empty()) d3.select('#chartLegend').selectAll('circle').remove();
       if (!d3.select('#chart').select('svg').selectAll('rect').empty()) d3.select('#chart').select('svg').selectAll('rect').remove();
       if (!d3.select('#chart').select('div').empty()) d3.select('#chart').select('div').remove();
+
+      // initialie line chart element
       const svg = d3.select('#chart')
         .append("svg")
         .attr("width", this.width + this.margin.left + this.margin.right)
@@ -285,15 +318,23 @@ export class StatisticComponent implements OnInit {
         .append("g")
         .attr("transform",
           "translate(" + this.margin.left + "," + this.margin.top + ")");
+
+      // initialize tooltip element
       const tooltip = d3.select("#chart")
         .append('div')
         .style('visibility', 'hidden')
+        .style('opacity', 0.7)
         .style("background-color", "white")
         .style("border", "solid")
         .style("border-width", "1px")
         .style("border-radius", "5px")
-        .style("padding", "10px");
-      const tooltipLine = svg.append('line'); // search line for bisecting both value lines
+        .style("padding", "10px")
+        .style('z-index', 9999);
+
+      // Initializing search line
+      const tooltipLine = svg.append('line');
+
+      // creating box to determine mouse position
       const tipBox = svg.append('rect')
         .attr('width', this.width)
         .attr('height', this.height)
@@ -301,16 +342,22 @@ export class StatisticComponent implements OnInit {
         .on('pointermove', (event) => mousemove(event))
         .on('pointerout', mouseleave);
 
+      /**
+       * 
+       * @param event mouse event
+       */
       function mousemove(event: any) {
         let date = xScale.invert(event.offsetX - that.margin.left);
         date = new Date(that.dateToStr(date));
 
+        // create new graph bisector
         tooltipLine.attr('stroke', 'black')
           .attr('x1', xScale(date))
           .attr('x2', xScale(date))
           .attr('y1', 0)
           .attr('y2', that.height)
-
+        
+        // for each country, determine the data point at the given mouseposition and add it to the tooltip
         if (countries.length == 1) {
           let d1 = data[0].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
           d1 = d1 == [] ? [0] : d1;
@@ -375,14 +422,13 @@ export class StatisticComponent implements OnInit {
         }
       }
 
+      // function to remove the tooltip once the mouse cursor exits the chart box
       function mouseleave() {
         if (tooltip) tooltip.style('visibility', 'hidden');
         if (tooltipLine) tooltipLine.attr('stroke', 'none');
       }
 
-      const legendSVG = d3.select('#chartLegend')
-        .attr('height', legendheight * 2 / 3)
-        .attr('width', legendWidth);
+      // creating time scale for the x axis
       let xScale = d3.scaleTime()
         .domain([start, end])
         .range([0, this.width]);
@@ -390,6 +436,7 @@ export class StatisticComponent implements OnInit {
         .attr("transform", "translate(0," + this.height + ")")
         .call(d3.axisBottom(xScale));
 
+      // determining the max value for each country
       let maxes = [];
       if (data.length == 1) {
         const max1 = d3.max(data[0], function (d: cData) { return +d.tfh; }) ?? 10;
@@ -406,7 +453,6 @@ export class StatisticComponent implements OnInit {
         maxes.push(max1);
         maxes.push(max2);
         maxes.push(max3);
-
       } else if (data.length == 4) {
         const max1 = d3.max(data[0], function (d: cData) { return +d.tfh; }) ?? 10;
         const max2 = d3.max(data[1], function (d: cData) { return +d.tfh; }) ?? 10;
@@ -419,6 +465,7 @@ export class StatisticComponent implements OnInit {
 
       }
 
+      // determining the max value all the countries
       const tfhMax = d3.max(maxes, function (d: number) { return d; }) ?? 10;
       // Y axis: initialization
       let yScale: any;
@@ -435,8 +482,15 @@ export class StatisticComponent implements OnInit {
       svg.append("g")
         .call(d3.axisLeft(yScale));
 
+
+      // creating line chart legend
+      const legendSVG = d3.select('#chartLegend')
+        .attr('height', legendheight * 2 / 3)
+        .attr('width', legendWidth);
+
       const linef1: any = d3.line().x((d: any) => xScale(new Date(d.date))).y((d: any) => yScale(+d.tfh));
 
+      // creating line chart legend for however many countries are being compared. 
       if (data.length == 1) {
         const line1 = svg.append("path")
           .datum(data[0])
@@ -594,10 +648,17 @@ export class StatisticComponent implements OnInit {
       }
     })
   }
+
+  // converts date into a string that is readable to the api service
   dateToStr(d: Date) {
     return d.getFullYear() + '-' + ("0" + (d.getMonth() + 1)).slice(-2) + '-' + ("0" + d.getDate()).slice(-2)
   }
 
+  /**
+   * Truncates number to 1 decimal place
+   * @param x number to be truncated
+   * @returns truncated number
+   */
   truncate(x: number) {
     if (x < 0) {
       x = Math.ceil(x * 10) / 10;
@@ -607,6 +668,12 @@ export class StatisticComponent implements OnInit {
     return x
   }
 
+  /**
+   * Determines the mean of each bin
+   * @param data 
+   * @param bins 
+   * @returns 
+   */ 
   dataToBins(data: cData[], bins: any): number[] {
     let binned: cData[][] = [];
     bins.forEach((b: any) => {
@@ -621,18 +688,22 @@ export class StatisticComponent implements OnInit {
     return sums
   }
 
+  /**
+   * Disables line chart inputs when bar chart is being filtered and vice versa
+   */
   radioChange() {
     if (this.chart == 'line') {
       this.countryControl.disable();
       this.mCountries.enable();
-
     } else if (this.chart == 'bar') {
       this.countryControl.enable();
       this.mCountries.disable();
     }
-
   }
 
+  /**
+   * Limits the number of countries that can be selected to 4.
+   */
   lineChange() {
     if (this.mCountries.value.length < 5) {
       this.lineSelection = this.mCountries.value;
@@ -641,16 +712,23 @@ export class StatisticComponent implements OnInit {
     }
   }
 
+  /**
+   * updates chart when "update visualization is clicked"
+   */
   clickUpdate() {
     //alert("Hi there, we have been trying to reach you about your car's extended warranty. Please call us back at +491723304303")
     this.callChart()
   }
+
+  // filter for the autocomplete input
   private _filter(name: string): Country[] {
     const filterValue = name.toLowerCase();
-
     return this.options.filter(option => option.viewValue.toLowerCase().includes(filterValue));
   }
 
+  /**
+   * unhides progress bar 
+   */
   showProgress() {
     let element = document.getElementById("chartProgress");
     if (element != null) {
@@ -658,6 +736,9 @@ export class StatisticComponent implements OnInit {
     }
   }
 
+  /**
+   * hides progress bar 
+   */
   hideProgress() {
     let element = document.getElementById("chartProgress");
     if (element != null) {

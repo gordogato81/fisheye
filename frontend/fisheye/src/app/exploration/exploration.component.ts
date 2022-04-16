@@ -39,8 +39,9 @@ export class ExplorationComponent implements OnInit {
   private min_color = 'orange';
   private max_color = 'purple';
   private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=json';
-  sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) };
-  sliderMax: number = 1461; //3288 = 2012 - 2020
+
+  sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) }; // Displays the date as a string on the slider thumb
+  sliderMax: number = 1461; //3288 = 2012 - 2020  // the total number of dats in the dataset
   sliderVal: number = 1;
   mapScale: string = 'log';
   minDate: Date = new Date('2017-01-01');
@@ -58,17 +59,11 @@ export class ExplorationComponent implements OnInit {
   sliderForm = new FormGroup({
     sliderControl: new FormControl([20, 50])
   });
-  public options: Options = {
-    floor: 0,
-    ceil: 365,
-    step: 1,
-    translate: (value: number): string => {
-      return this.dateToStr(this.valToDate(value));
-    }
-  };
 
   ngOnInit(): void {
     const that = this;
+
+    // initalize filter for the autocomplete input
     this.filteredOptions = this.countryControl.valueChanges.pipe(
       startWith(''),
       map(value => (typeof value === 'string' ? value : value.name)),
@@ -82,6 +77,7 @@ export class ExplorationComponent implements OnInit {
     };
     this.map = L.map('map', mapOptions).setView([18, 0], 2.5); // defaults to world view 
 
+    //creating new tile layer
     const tilelayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       minZoom: 2,
       maxZoom: 10,
@@ -89,26 +85,22 @@ export class ExplorationComponent implements OnInit {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     });
-    // const tilelayer = L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
-    //   minZoom: 2,
-    //   maxZoom: 10,
-    //   attribution:
-    //     '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
-    // });
+
     this.map.attributionControl.setPosition('bottomleft');
     tilelayer.addTo(this.map);
     L.canvas().addTo(this.map);
-    const bl = L.latLng(-90, -240);
-    const tr = L.latLng(90, 240);
-    this.map.setMaxBounds(L.latLngBounds(bl, tr));
-    this.es.setMap(this.map);
+    // const bl = L.latLng(-90, -240);
+    // const tr = L.latLng(90, 240);
+    // this.map.setMaxBounds(L.latLngBounds(bl, tr));
+
+    this.es.setMap(this.map); // sending map info to exploration service
 
     this.canvas = d3.select(this.map.getPanes().overlayPane).select('canvas').attr('z-index', 300);
     this.es.setCanvas(this.canvas);
-
     this.context = this.canvas.node().getContext('2d');
     this.es.setContext(this.context);
 
+    // initalizing tooltip
     this.tooltip = d3.select('#tooltip')
       .attr("class", "leaflet-interactive")
       .style('visibility', 'hidden')
@@ -117,18 +109,14 @@ export class ExplorationComponent implements OnInit {
       .style("border-width", "1px")
       .style("border-radius", "5px")
       .style("padding", "10px")
+      .style('opacity', 0.7)
       .style('z-index', 9999);
     this.legend = d3.select('#legend')
       .attr('height', 360)
       .attr('width', 90)
 
-    // this.canvas
-    //   .on("pointermove", function (event: any, d: any) { that.mousemove(event, d) })
-    //   .on("pointerout", function (event: any, d: any) { that.mouseleave(d) });
 
-    const start = "2020-03-01";
-    const end = "2020-03-05";
-    
+    // collecting geoJSON form FAO API and sending it to the exploration service
     d3.json(this.faoURL).then((data: any) => {
       console.log(data)
       this.faoDisabled = false;
@@ -141,41 +129,24 @@ export class ExplorationComponent implements OnInit {
             fillOpacity: 0.1,
           }
         });
-      
+
       this.ds.setJson(jsonLayer);
     });
+
+    // >>> getting intial values and setting default inputs
+    const start = "2020-03-01";
+    const end = "2020-03-05";
     this.getData(start, end);
     this.es.setInterval(this.dateRangeToInterval(new Date(start), new Date(end)));
     this.sliderVal = this.dateToVal(new Date(start));
     this.range.setValue({ start: start, end: end });
     this.countryControl.setValue('World')
+    // <<<
 
-    // this.map.on('mousemove', function (event: L.LeafletMouseEvent) {
-    //   const data = that.es.getData();
-    //   if (!(data === undefined)) {
-    //     if (data.length <= 50000) {
-    //       const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
-    //       const lng = that.truncate(event.latlng.lng);
-    //       const d: any = data.find((d: tmp) => d.lat == lat - 0.1 && d.lon == lng);
-    //       if (!(d === undefined)) {
-    //         that.tooltip
-    //           .style("position", "absolute")
-    //           .style('z-index', 9999)
-    //           .style('visibility', 'visible')
-    //           .style('left', event.originalEvent.pageX + 20 + "px")
-    //           .style('top', event.originalEvent.pageY + 20 + "px")
-    //           .html('Latitude: ' + d.lat + '<br>'
-    //             + 'Longitude: ' + d.lon + '<br>'
-    //             + 'Fishing Hours: ' + Math.round(d.tfh * 100) / 100);
-    //       } else {
-    //         that.tooltip.style('visibility', 'hidden');
-    //       }
-    //     }
-    //   }
-    // });
-
+    // calling tooltip on click 
     this.map.on('click', function (event: L.LeafletMouseEvent) {
       const data = that.es.getData();
+      // + 0.1 to the latitude to change raster position from top left to bottom left of each raster rectangle
       const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
       const lng = that.truncate(event.latlng.lng);
 
@@ -199,22 +170,33 @@ export class ExplorationComponent implements OnInit {
 
   }
 
+  // filter function for the autocomplete input
   private _filter(name: string): Country[] {
     const filterValue = name.toLowerCase();
-
     return this.options1.filter(option => option.viewValue.toLowerCase().includes(filterValue));
   }
 
+  /**
+   * Gets the data from the api service and adds elements to the canvas overlayed on the map
+   * @param start starting date
+   * @param end end date
+   */
   private getData(start: string, end: string) {
     const that = this;
+    // show progress bar
     this.showProgress();
     this.map = this.es.getMap();
     const context = this.es.getContext();
     const canvas = this.es.getCanvas();
     const country = this.countryControl.value;
+    const legendheight = 345;
+    const legendwidth = 25;
 
+    // getting the data from the api service
     this.ds.getDateRangeVal(start, end, country).subscribe(data => {
+      // removing any previous canvas elements
       clearContext();
+      // hiding progress bar
       this.hideProgress();
       this.r_data = data;
       this.es.setData(this.r_data);
@@ -226,11 +208,13 @@ export class ExplorationComponent implements OnInit {
       this.es.setDMax(this.dMax);
       this.render(this.r_data);
 
+      // >>> removing any previous legend DOM elements 
       if (!this.legend.selectAll('rect').empty()) this.legend.selectAll('rect').remove();
       if (!this.legend.selectAll('g').empty()) this.legend.selectAll('g').remove();
       if (!this.legend.selectAll('text').empty()) this.legend.selectAll('text').remove();
-      const legendheight = 345;
-      const legendwidth = 25;
+      // <<< 
+
+      // Determine color scale based on user input
       let colorScale: any;
       if (this.mapScale == 'log') {
         colorScale = d3.scaleSymlog();
@@ -242,6 +226,7 @@ export class ExplorationComponent implements OnInit {
 
       colorScale.domain([0, this.dMax]).range([0, legendheight])
       const coloraxis = d3.axisLeft(colorScale).ticks(5);
+      // >>> constructing legend
       this.legend.append("defs")
         .append('linearGradient')
         .attr("id", "gradient")
@@ -275,16 +260,16 @@ export class ExplorationComponent implements OnInit {
         .attr('y', -78)
         .attr("transform", "rotate(90)")
         .text('Apparent Fishing Activity in Hours')
-
-
+      // <<<
     });
 
-    this.map.on('moveend zoomend', update);
+    this.map.on('moveend zoomend', update); // rerender datapoints when the map view is changed
 
 
-
+    // adds canvas element for a given data point
     function draw(d: tmp) {
       let colorMap: any;
+      // determining the color scaling based on user input
       if (that.mapScale == 'log') {
         colorMap = d3.scaleSymlog<string, number>();
       } else if (that.mapScale == 'sqrt') {
@@ -292,45 +277,24 @@ export class ExplorationComponent implements OnInit {
       } else if (that.mapScale == 'linear') {
         colorMap = d3.scaleLinear();
       }
+
       colorMap.domain([0, that.dMax]).range(["orange", "purple"]);
-      let newX;
       const newY = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).y + 0.1;
+      const newX = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
       context.beginPath();
       context.fillStyle = colorMap(d.tfh);
-      // if (d.lon < 0) {
-      //   newX = that.map.latLngToLayerPoint(L.latLng(d.lat, (d.lon + 180))).x;
-      //   context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
-      // } else {
-
-      // }
-      newX = that.map.latLngToLayerPoint(L.latLng(d.lat, d.lon)).x;
       context.rect(newX, newY, that.detSize(d)[0], that.detSize(d)[1]);
       context.fill();
       context.closePath();
-      // const extendWest = 60; // width extension in longitude
-      // if (d.lon < (-180 + extendWest)) { // extending towards the west
-      //   const extX = that.map.latLngToLayerPoint(L.latLng(d.lat, (d.lon + 360))).x;
-      //   context.beginPath();
-      //   context.fillStyle = colorMap(d.tfh);
-      //   context.rect(extX, newY, that.detSize(d)[0], that.detSize(d)[1]);
-      //   context.fill();
-      //   context.closePath();
-      // } else if (d.lon > (180 - extendWest)) { // extending towards the east
-      //   const extX = that.map.latLngToLayerPoint(L.latLng(d.lat, (-360 + d.lon))).x;
-      //   context.beginPath();
-      //   context.fillStyle = colorMap(d.tfh);
-      //   context.rect(extX, newY, that.detSize(d)[0], that.detSize(d)[1]);
-      //   context.fill();
-      //   context.closePath();
-      // }
     }
 
+    // removes all previous canvas elements
     function clearContext() {
       context.clearRect(0, 0, canvas.attr("width"), canvas.attr("height"));
     }
 
+    // rerender datapoints when the map moves or zooms.
     function update() {
-      // console.log(that.map.getZoom());
       if (that.loaded) {
         that.render(that.r_data);
       }
@@ -459,7 +423,7 @@ export class ExplorationComponent implements OnInit {
   faoChange(event: any) {
     this.map = this.es.getMap();
     const jsonLayer = this.ds.getJson();
-    
+
     if (this.faoChecked) {
       jsonLayer.addTo(this.map);
       jsonLayer.setZIndex(99);
