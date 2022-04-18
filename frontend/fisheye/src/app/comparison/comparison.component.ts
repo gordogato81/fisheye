@@ -29,6 +29,10 @@ export class ComparisonComponent implements OnInit {
   private tooltip2: any;
   private tooltip3: any;
   private tooltip4: any;
+  private faoSVG1: any;
+  private faoSVG2: any;
+  private faoSVG3: any;
+  private faoSVG4: any;
   private bl: [number, number] = [0, 0];
   private tr: [number, number] = [10, 10];
   private totalFishingMax = 5486.0071;
@@ -128,24 +132,7 @@ export class ComparisonComponent implements OnInit {
     // Acquiring geojson from FAO API
     d3.json(this.faoURL).then((data: any) => {
       this.faoDisabled = false;
-      const jsonOptions = {
-        style: {
-          color: 'grey',
-          opacity: 0.7,
-          fillColor: 'grey',
-          fillOpacity: 0.1,
-        }
-      };
-      // creating geoJSON svg layer for each map
-      const jsonLayer1 = L.geoJSON(data, jsonOptions);
-      const jsonLayer2 = L.geoJSON(data, jsonOptions);
-      const jsonLayer3 = L.geoJSON(data, jsonOptions);
-      const jsonLayer4 = L.geoJSON(data, jsonOptions);
-      //sending geoJSON layer information to comparison service
-      this.cs.setJson(jsonLayer1, 1);
-      this.cs.setJson(jsonLayer2, 2);
-      this.cs.setJson(jsonLayer3, 3);
-      this.cs.setJson(jsonLayer4, 4);
+      this.cs.setJson(data, 1);
     });
 
     //getting inital bounds;
@@ -286,6 +273,7 @@ export class ComparisonComponent implements OnInit {
     //'https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png'
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
     L.canvas().addTo(map);
+    L.svg().addTo(map);
     const canvas: any = d3.select(map.getPanes().overlayPane).select('canvas');
     const context = canvas.node().getContext('2d');
     this.cs.setCanvas(canvas, num);
@@ -507,12 +495,12 @@ export class ComparisonComponent implements OnInit {
       this.map1.on('click', function (event: L.LeafletMouseEvent) {
         const data = that.cs.getData(1);
         // + 0.1 to the latitude as we are looking at the lower bottom left corner of each raster point whilst leaflet looks at the top left
-        const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100); 
+        const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
         const lng = that.truncate(event.latlng.lng);
 
         if (!(data === undefined)) {
           // finding the data point that was clicked 
-          const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng); 
+          const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng);
           if (!(d === undefined)) {
             that.tooltip1
               .style("position", "absolute")
@@ -621,22 +609,22 @@ export class ComparisonComponent implements OnInit {
       first = L.latLng(lat - 0.01, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 3) {
-      first = L.latLng(lat - 0.03, lon); 
+      first = L.latLng(lat - 0.03, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 4) {
-      first = L.latLng(lat - 0.025, lon); 
+      first = L.latLng(lat - 0.025, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 5) {
-      first = L.latLng(lat - 0.017, lon); 
+      first = L.latLng(lat - 0.017, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 6) {
-      first = L.latLng(lat - 0.005, lon); 
+      first = L.latLng(lat - 0.005, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else if (zoom == 7) {
       first = L.latLng(lat - 0.002, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     } else {
-      first = L.latLng(lat, lon); 
+      first = L.latLng(lat, lon);
       second = L.latLng(lat + 0.1, lon + 0.1);
     }
 
@@ -657,25 +645,118 @@ export class ComparisonComponent implements OnInit {
 
   // add or remove FAO boundary SVG layer
   faoChange(event: any) {
+    const that = this;
     this.map1 = this.cs.getMap(1)!;
     this.map2 = this.cs.getMap(2)!;
     this.map3 = this.cs.getMap(3)!;
     this.map4 = this.cs.getMap(4)!;
-    const jsonLayer1 = this.cs.getJson(1);
-    const jsonLayer2 = this.cs.getJson(2);
-    const jsonLayer3 = this.cs.getJson(3);
-    const jsonLayer4 = this.cs.getJson(4);
+    const jsonData = this.cs.getJson(1);
+
+    // Transforming svg locations to leaflet coordinates
+    const transform = d3.geoTransform({
+      point: function (x, y) {
+        const point = that.map1.latLngToLayerPoint([y, x]);
+        this.stream.point(point.x, point.y);
+      },
+    });
+
+    // Adding transformation to the path
+    const path = d3.geoPath().projection(transform);
 
     if (this.faoChecked) {
-      jsonLayer1.addTo(this.map1);
-      jsonLayer2.addTo(this.map2);
-      jsonLayer3.addTo(this.map3);
-      jsonLayer4.addTo(this.map4);
+      this.faoSVG1 = d3.select(this.map1.getPanes().overlayPane).select('svg');
+      this.faoSVG2 = d3.select(this.map2.getPanes().overlayPane).select('svg');
+      this.faoSVG3 = d3.select(this.map3.getPanes().overlayPane).select('svg');
+      this.faoSVG4 = d3.select(this.map4.getPanes().overlayPane).select('svg');
+
+      // adding FAO boundary paths
+      const features1 = this.faoSVG1.append('g').selectAll('path')
+        .data(jsonData.features)
+        .enter()
+        .append('path')
+        .attr('d', (d: any) => path(d.geometry))
+        .attr("class", "leaflet-interactive")
+        .attr('pointer-events', 'painted')
+        .style('fill', 'lightgrey')
+        .style('fill-opacity', 0)
+        .attr('stroke', 'black')
+        .attr('stroke-opacity', 0.2);
+
+      const features2 = this.faoSVG2.append('g').selectAll('path')
+        .data(jsonData.features)
+        .enter()
+        .append('path')
+        .attr('d', (d: any) => path(d.geometry))
+        .attr("class", "leaflet-interactive")
+        .attr('pointer-events', 'painted')
+        .style('fill', 'lightgrey')
+        .style('fill-opacity', 0)
+        .attr('stroke', 'black')
+        .attr('stroke-opacity', 0.2);
+
+      const features3 = this.faoSVG3.append('g').selectAll('path')
+        .data(jsonData.features)
+        .enter()
+        .append('path')
+        .attr('d', (d: any) => path(d.geometry))
+        .attr("class", "leaflet-interactive")
+        .attr('pointer-events', 'painted')
+        .style('fill', 'lightgrey')
+        .style('fill-opacity', 0)
+        .attr('stroke', 'black')
+        .attr('stroke-opacity', 0.2);
+
+      const features4 = this.faoSVG4.append('g').selectAll('path')
+        .data(jsonData.features)
+        .enter()
+        .append('path')
+        .attr('d', (d: any) => path(d.geometry))
+        .attr("class", "leaflet-interactive")
+        .attr('pointer-events', 'painted')
+        .style('fill', 'lightgrey')
+        .style('fill-opacity', 0)
+        .attr('stroke', 'black')
+        .attr('stroke-opacity', 0.2);
+
+      // adding tooltip
+      const faoTooltip = d3.select('#tooltipFAO')
+        .attr("class", "leaflet-interactive")
+        .style('visibility', 'hidden')
+        .style("position", "absolute")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "5px")
+        .style("padding", "10px")
+        .style('opacity', 0.7)
+        .style('z-index', 10000);
+
+      features1.on('pointermove', mousemove)
+        .on('pointerout', mouseleave);
+      features2.on('pointermove', mousemove)
+        .on('pointerout', mouseleave);
+      features3.on('pointermove', mousemove)
+        .on('pointerout', mouseleave);
+      features4.on('pointermove', mousemove)
+        .on('pointerout', mouseleave);
+
+      function mousemove(event: any, d: any) {
+        faoTooltip.html("FAO Boundary: " + d.properties.NAME_EN + "<br>"
+          + "Ocean: " + d.properties.OCEAN)
+          .style('visibility', 'visible')
+          .style('left', (event.pageX + 5) + 'px')
+          .style('top', (event.pageY + 5) + 'px');
+      }
+      function mouseleave(d: any) {
+        faoTooltip
+          .style('visibility', 'hidden');
+      }
+
     } else if (!this.faoChecked) {
-      jsonLayer1.removeFrom(this.map1);
-      jsonLayer2.removeFrom(this.map2);
-      jsonLayer3.removeFrom(this.map3);
-      jsonLayer4.removeFrom(this.map4);
+      if (!this.faoSVG1.selectAll('g').empty()) this.faoSVG1.selectAll('g').remove();
+      if (!this.faoSVG2.selectAll('g').empty()) this.faoSVG2.selectAll('g').remove();
+      if (!this.faoSVG3.selectAll('g').empty()) this.faoSVG3.selectAll('g').remove();
+      if (!this.faoSVG4.selectAll('g').empty()) this.faoSVG4.selectAll('g').remove();
     }
   }
 

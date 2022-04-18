@@ -28,12 +28,14 @@ export class ExplorationComponent implements OnInit {
   ) { }
   private map!: L.Map;
   private canvas: any;
+  private faoSVG: any;
   private r_data: any;
   private dMax: number = 2439.9774;
   private render: any;
   private loaded: boolean = false;
   private context: any;
   private tooltip: any;
+  private faoTooltip: any;
   private legend: any;
   private intervalLength: number = 5;
   private min_color = 'orange';
@@ -89,6 +91,7 @@ export class ExplorationComponent implements OnInit {
     this.map.attributionControl.setPosition('bottomleft');
     tilelayer.addTo(this.map);
     L.canvas().addTo(this.map);
+    L.svg().addTo(this.map);
     // const bl = L.latLng(-90, -240);
     // const tr = L.latLng(90, 240);
     // this.map.setMaxBounds(L.latLngBounds(bl, tr));
@@ -111,6 +114,7 @@ export class ExplorationComponent implements OnInit {
       .style("padding", "10px")
       .style('opacity', 0.7)
       .style('z-index', 9999);
+
     this.legend = d3.select('#legend')
       .attr('height', 360)
       .attr('width', 90)
@@ -118,19 +122,8 @@ export class ExplorationComponent implements OnInit {
 
     // collecting geoJSON form FAO API and sending it to the exploration service
     d3.json(this.faoURL).then((data: any) => {
-      console.log(data)
-      this.faoDisabled = false;
-      const jsonLayer = L.geoJSON(data,
-        {
-          style: {
-            color: 'grey',
-            opacity: 0.7,
-            fillColor: 'grey',
-            fillOpacity: 0.1,
-          }
-        });
-
-      this.ds.setJson(jsonLayer);
+      this.faoDisabled = false; // makes the FAO checkmark clickable 
+      this.ds.setJson(data);
     });
 
     // >>> getting intial values and setting default inputs
@@ -145,10 +138,12 @@ export class ExplorationComponent implements OnInit {
 
     // calling tooltip on click 
     this.map.on('click', function (event: L.LeafletMouseEvent) {
+      console.log(event);
       const data = that.es.getData();
       // + 0.1 to the latitude to change raster position from top left to bottom left of each raster rectangle
       const lat = that.truncate(Math.round((event.latlng.lat + 0.1) * 100) / 100);
       const lng = that.truncate(event.latlng.lng);
+
 
       if (!(data === undefined)) {
         const d: any = data.find((d: tmp) => d.lat == lat && d.lon == lng);
@@ -421,14 +416,70 @@ export class ExplorationComponent implements OnInit {
   }
 
   faoChange(event: any) {
+    const that = this;
     this.map = this.es.getMap();
-    const jsonLayer = this.ds.getJson();
+    const jsonData = this.ds.getJson();
+
+    // Transforming svg locations to leaflet coordinates
+    const transform = d3.geoTransform({
+      point: function (x, y) {
+        const point = that.map.latLngToLayerPoint([y, x]);
+        this.stream.point(point.x, point.y);
+      },
+    });
+
+    // Adding transformation to the path
+    const path = d3.geoPath().projection(transform);
 
     if (this.faoChecked) {
-      jsonLayer.addTo(this.map);
-      jsonLayer.setZIndex(99);
+      this.faoSVG = d3.select(this.map.getPanes().overlayPane).select('svg');
+      const features = this.faoSVG.append('g').selectAll('path')
+        .data(jsonData.features)
+        .enter()
+        .append('path')
+        .attr('d', (d: any) => path(d.geometry))
+        .attr("class", "leaflet-interactive")
+        .attr('pointer-events', 'painted')
+        .style('fill', 'lightgrey')
+        .style('fill-opacity', 0)
+        .attr('stroke', 'black')
+        .attr('stroke-opacity', 0.2);
+
+      this.faoTooltip = d3.select('#tooltip2')
+        .attr("class", "leaflet-interactive")
+        .style('visibility', 'hidden')
+        .style("position", "absolute")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "5px")
+        .style("padding", "10px")
+        .style('opacity', 0.7)
+        .style('z-index', 10000);
+
+      features.on('pointermove', mousemove)
+        .on('pointerout', mouseleave)
+
+      this.map.on('zoomend', update);
+
+      function update() {
+        features.attr('d', (d: any) => path(d.geometry));
+      }
+
+      function mousemove(event: any, d: any) {
+        that.faoTooltip.html("FAO Boundary: " + d.properties.NAME_EN + "<br>"
+          + "Ocean: " + d.properties.OCEAN)
+          .style('visibility', 'visible')
+          .style('left', (event.pageX + 5) + 'px')
+          .style('top', (event.pageY + 5) + 'px');
+      }
+      function mouseleave(d: any) {
+        that.faoTooltip
+          .style('visibility', 'hidden');
+      }
+
     } else if (!this.faoChecked) {
-      jsonLayer.removeFrom(this.map);
+      if (!this.faoSVG.selectAll('g').empty()) this.faoSVG.selectAll('g').remove();
     }
   }
 }
