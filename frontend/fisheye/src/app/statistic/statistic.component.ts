@@ -29,7 +29,7 @@ export class StatisticComponent implements OnInit {
     start: new FormControl(),
     end: new FormControl(),
   });
-  minDate: Date = new Date('2017-01-01');
+  minDate: Date = new Date('2012-01-01');
   maxDate: Date = new Date('2020-12-31');
   worldChecked = true;
   chart = 'bar';
@@ -241,8 +241,8 @@ export class StatisticComponent implements OnInit {
         tooltip
           .style("position", "absolute")
           .style('visibility', 'visible')
-          .style('left', event.pageX + 20 + "px")
-          .style('top', event.pageY + 20 + "px")
+          .style('left', event.offsetX + 20 + "px")
+          .style('top', event.offsetY + 20 + "px")
           .html('Start: ' + that.dateToStr(d.x0) + '<br>'
             + 'End: ' + that.dateToStr(d.x1) + '<br>'
             + country + ': ' + Math.round(d.tfh * 100) / 100);
@@ -356,7 +356,7 @@ export class StatisticComponent implements OnInit {
           .attr('x2', xScale(date))
           .attr('y1', 0)
           .attr('y2', that.height)
-        
+
         // for each country, determine the data point at the given mouseposition and add it to the tooltip
         if (countries.length == 1) {
           let d1 = data[0].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
@@ -364,8 +364,8 @@ export class StatisticComponent implements OnInit {
           tooltip
             .style("position", "absolute")
             .style('visibility', 'visible')
-            .style('left', event.pageX + 20 + "px")
-            .style('top', event.pageY + 20 + "px")
+            .style('left', event.offsetX + 20 + "px")
+            .style('top', event.offsetY + 20 + "px")
             .html('Date: ' + that.dateToStr(date) + '<br>'
               + countries[0] + ': ' + Math.round(d1.tfh * 100) / 100);
         } else if (countries.length == 2) {
@@ -377,8 +377,8 @@ export class StatisticComponent implements OnInit {
           tooltip
             .style("position", "absolute")
             .style('visibility', 'visible')
-            .style('left', event.pageX + 20 + "px")
-            .style('top', event.pageY + 20 + "px")
+            .style('left', event.offsetX + 20 + "px")
+            .style('top', event.offsetY + 20 + "px")
             .html('Date: ' + that.dateToStr(date) + '<br>'
               + countries[0] + ': ' + Math.round(d1.tfh * 100) / 100 + '<br>'
               + countries[1] + ': ' + Math.round(d2.tfh * 100) / 100);
@@ -501,11 +501,13 @@ export class StatisticComponent implements OnInit {
         legendSVG.append("circle")
           .attr("cx", 0 + 5 * (legendWidth / 100))
           .attr("cy", 0 + 5 * (legendheight / 100))
-          .attr("r", 6).style("fill", "steelblue");
+          .attr("r", 6)
+          .style("fill", "steelblue");
         legendSVG.append("text")
           .attr("x", 20 + 5 * (legendWidth / 100))
           .attr("y", 0 + 5 * (legendheight / 100))
-          .text(countries[0]).style("font-size", "15px")
+          .text(countries[0])
+          .style("font-size", "15px")
           .attr("alignment-baseline", "middle");
       } else if (data.length == 2) {
         const line1 = svg.append("path")
@@ -673,7 +675,7 @@ export class StatisticComponent implements OnInit {
    * @param data 
    * @param bins 
    * @returns 
-   */ 
+   */
   dataToBins(data: cData[], bins: any): number[] {
     let binned: cData[][] = [];
     bins.forEach((b: any) => {

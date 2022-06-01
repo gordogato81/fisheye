@@ -42,7 +42,7 @@ export class ComparisonComponent implements OnInit {
   private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=json';
   subs: Subscription = new Subscription();
   mapsScale: string = 'log'
-  minDate: Date = new Date('2017-01-01');
+  minDate: Date = new Date('2012-01-01');
   maxDate: Date = new Date('2020-12-31');
   faoChecked = false;
   faoDisabled = true;
@@ -143,9 +143,9 @@ export class ComparisonComponent implements OnInit {
     this.tr[1] = bounds.getEast();
 
     //setting initial time intervals
-    this.range1.setValue({ start: '2017-01-01', end: '2020-01-31' });
-    this.range2.setValue({ start: '2018-01-01', end: '2020-01-31' });
-    this.range3.setValue({ start: '2019-01-01', end: '2020-01-31' });
+    this.range1.setValue({ start: '2017-01-01', end: '2017-01-31' });
+    this.range2.setValue({ start: '2018-01-01', end: '2018-01-31' });
+    this.range3.setValue({ start: '2019-01-01', end: '2019-01-31' });
     this.range4.setValue({ start: '2020-01-01', end: '2020-01-31' });
 
     // initially filling maps with data
