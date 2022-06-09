@@ -43,7 +43,7 @@ export class ExplorationComponent implements OnInit {
   private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=json';
 
   sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) }; // Displays the date as a string on the slider thumb
-  sliderMax: number = 3287; // the total number of dats in the dataset 
+  sliderMax: number = 3288; // the total number of dats in the dataset 
   sliderVal: number = 1;
   mapScale: string = 'log';
   minDate: Date = new Date('2012-01-01');
