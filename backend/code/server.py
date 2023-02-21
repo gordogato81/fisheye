@@ -16,7 +16,7 @@ def home():
 @app.route('/getQuadValues', methods=["GET", "POST"])
 def getQuadValues():
     connection = psycopg2.connect(
-        host="charon04.inf.uni-konstanz.de", port=5432, dbname="fishingdb", user="wittekindt", password="HLFiqcjkJLOfcfOysnLR")
+        host="", port=5432, dbname="", user="", password="")
 
     b1 = [0, 1]
     b2 = [0, 2]
@@ -101,7 +101,7 @@ def getQuadValues():
 @app.route('/getLcV', methods=["GET", "POST"])
 def getLcV():
     connection = psycopg2.connect(
-        host="charon04.inf.uni-konstanz.de", port=5432, dbname="fishingdb", user="wittekindt", password="HLFiqcjkJLOfcfOysnLR")
+        host="", port=5432, dbname="", user="", password="")
 
     b1 = [0, 1]
     b2 = [0, 2]
@@ -210,8 +210,8 @@ def getLcV():
 
 @app.route('/getChartData', methods=['GET', 'POST'])
 def getChartData():
-    connection = psycopg2.connect(host="charon04.inf.uni-konstanz.de", port=5432,
-                                  dbname="fishingdb", user="wittekindt", password="HLFiqcjkJLOfcfOysnLR")
+    connection = psycopg2.connect(host="", port=5432,
+                                  dbname="", user="", password="")
 
     b1 = [0, 1]
     b2 = [0, 2]
