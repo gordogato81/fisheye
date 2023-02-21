@@ -1,8 +1,5 @@
-from crypt import methods
-from multiprocessing import connection
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import json
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -340,8 +337,7 @@ def getChartData():
     with connection.cursor(cursor_factory=RealDictCursor) as cursor:
         if (bl[0] == -10000 or bl[1] == -10000 or tr[0] == -10000 or tr[1] == -10000):
             if (batchNum == 0):
-                query = cursor.mogrify(
-                query, (start, end))
+                query = cursor.mogrify(query, (start, end))
             elif (batchNum == 1):
                 query = cursor.mogrify(
                     query, (start, end, b1[0], b1[1]))
