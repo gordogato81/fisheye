@@ -1,19 +1,38 @@
 version: '3'
 services: 
 
-  # database:
-  #   build: ./database
-  #   volumes:
-  #     - database-data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
+  database:
+    container_name: fish-database
+    build: ./database
+    volumes:
+      - database-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - fish-network
 
-  backend:
+  fisheye-backend:
+    container_name: fisheye-backend
     build: ./backend
     ports:
       - "5000:5000"
     volumes:
       - ./backend/code:/var/opt/fisheye
+    networks:
+      - fish-network
+    
+  frontend:
+    container_name: fisheye-frontend
+    build: ./frontend
+    ports:
+      - "8889:80"
+    volumes:
+      - ./logs:/var/log/nginx
+    networks:
+      - fish-network
 
 volumes:
   database-data:
+
+networks:
+  fish-network:
