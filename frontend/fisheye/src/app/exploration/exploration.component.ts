@@ -4,7 +4,7 @@ import { APIService } from '../service/api.service';
 import * as L from 'leaflet';
 import * as d3 from 'd3';
 
-import { MatSliderChange } from '@angular/material/slider';
+import { MatLegacySliderChange as MatSliderChange } from '@angular/material/legacy-slider';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ExplorationService } from '../service/exploration.service';
 import { Options } from '@angular-slider/ngx-slider';
