@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { APIService } from '../service/api.service';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import * as L from 'leaflet'
 import * as d3 from 'd3';
 import { Country, tmp } from '../interfaces';
@@ -46,33 +46,33 @@ export class ComparisonComponent implements OnInit {
   maxDate: Date = new Date('2020-12-31');
   faoChecked = false;
   faoDisabled = true;
-  range1 = new FormGroup({
-    start: new FormControl(),
-    end: new FormControl(),
+  range1 = new UntypedFormGroup({
+    start: new UntypedFormControl(),
+    end: new UntypedFormControl(),
   });
-  range2 = new FormGroup({
-    start: new FormControl(),
-    end: new FormControl(),
+  range2 = new UntypedFormGroup({
+    start: new UntypedFormControl(),
+    end: new UntypedFormControl(),
   });
-  range3 = new FormGroup({
-    start: new FormControl(),
-    end: new FormControl(),
+  range3 = new UntypedFormGroup({
+    start: new UntypedFormControl(),
+    end: new UntypedFormControl(),
   });
-  range4 = new FormGroup({
-    start: new FormControl(),
-    end: new FormControl(),
+  range4 = new UntypedFormGroup({
+    start: new UntypedFormControl(),
+    end: new UntypedFormControl(),
   });
 
-  countryControl1 = new FormControl();
+  countryControl1 = new UntypedFormControl();
   options1: Country[] = countryJson;
   filteredOptions1!: Observable<Country[]>;
-  countryControl2 = new FormControl();
+  countryControl2 = new UntypedFormControl();
   options2: Country[] = countryJson;
   filteredOptions2!: Observable<Country[]>;
-  countryControl3 = new FormControl();
+  countryControl3 = new UntypedFormControl();
   options3: Country[] = countryJson;
   filteredOptions3!: Observable<Country[]>;
-  countryControl4 = new FormControl();
+  countryControl4 = new UntypedFormControl();
   options4: Country[] = countryJson;
   filteredOptions4!: Observable<Country[]>;
 

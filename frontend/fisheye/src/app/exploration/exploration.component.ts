@@ -5,7 +5,7 @@ import * as L from 'leaflet';
 import * as d3 from 'd3';
 
 import { MatSliderChange } from '@angular/material/slider';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ExplorationService } from '../service/exploration.service';
 import { Options } from '@angular-slider/ngx-slider';
 import { Observable } from 'rxjs';
@@ -48,18 +48,18 @@ export class ExplorationComponent implements OnInit {
   mapScale: string = 'log';
   minDate: Date = new Date('2012-01-01');
   maxDate: Date = new Date('2020-12-31');
-  range = new FormGroup({
-    start: new FormControl(),
-    end: new FormControl(),
+  range = new UntypedFormGroup({
+    start: new UntypedFormControl(),
+    end: new UntypedFormControl(),
   });
   faoChecked = false;
   faoDisabled = true;
-  countryControl = new FormControl();
+  countryControl = new UntypedFormControl();
   options1: Country[] = countryJson;
   filteredOptions!: Observable<Country[]>;
 
-  sliderForm = new FormGroup({
-    sliderControl: new FormControl([20, 50])
+  sliderForm = new UntypedFormGroup({
+    sliderControl: new UntypedFormControl([20, 50])
   });
 
   ngOnInit(): void {

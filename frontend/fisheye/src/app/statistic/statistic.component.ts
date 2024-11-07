@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { APIService } from '../service/api.service';
 import { forkJoin, map, observable, Observable, startWith } from 'rxjs';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import * as L from 'leaflet'
 import * as d3 from 'd3'
 
@@ -22,19 +22,19 @@ export class StatisticComponent implements OnInit {
   private margin = { top: 30, right: 30, bottom: 30, left: 60 };
   private width = 920 - this.margin.left - this.margin.right;
   private height = 870 - this.margin.top - this.margin.bottom;
-  countryControl = new FormControl();
+  countryControl = new UntypedFormControl();
   options: Country[] = countryJson;
   filteredOptions!: Observable<Country[]>;
-  range1 = new FormGroup({
-    start: new FormControl(),
-    end: new FormControl(),
+  range1 = new UntypedFormGroup({
+    start: new UntypedFormControl(),
+    end: new UntypedFormControl(),
   });
   minDate: Date = new Date('2012-01-01');
   maxDate: Date = new Date('2020-12-31');
   worldChecked = true;
   chart = 'bar';
   barAg = 'week';
-  mCountries = new FormControl();
+  mCountries = new UntypedFormControl();
   lineSelection: string[] = [];
   lineScale = 'linear';
 
