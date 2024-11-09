@@ -29,7 +29,8 @@ export class StatisticComponent implements OnInit {
     start: new UntypedFormControl(),
     end: new UntypedFormControl(),
   });
-  minDate: Date = new Date('2012-01-01');
+  // minDate: Date = new Date('2012-01-01');
+  minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
   worldChecked = true;
   chart = 'bar';
@@ -360,7 +361,7 @@ export class StatisticComponent implements OnInit {
         // for each country, determine the data point at the given mouseposition and add it to the tooltip
         if (countries.length == 1) {
           let d1 = data[0].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
-          d1 = d1 == [] ? [0] : d1;
+          d1 = d1.length == 0 ? [0] : d1;
           tooltip
             .style("position", "absolute")
             .style('visibility', 'visible')
@@ -371,8 +372,8 @@ export class StatisticComponent implements OnInit {
         } else if (countries.length == 2) {
           let d1 = data[0].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
           let d2 = data[1].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
-          d1 = d1 == [] ? [0] : d1;
-          d2 = d2 == [] ? [0] : d2;
+          d1 = d1.length == 0 ? [0] : d1;
+          d2 = d2.length == 0 ? [0] : d2;
 
           tooltip
             .style("position", "absolute")
@@ -386,9 +387,9 @@ export class StatisticComponent implements OnInit {
           let d1 = data[0].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
           let d2 = data[1].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
           let d3 = data[2].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
-          d1 = d1 == [] ? [0] : d1;
-          d2 = d2 == [] ? [0] : d2;
-          d3 = d3 == [] ? [0] : d3;
+          d1 = d1.length == 0 ? [0] : d1;
+          d2 = d2.length == 0 ? [0] : d2;
+          d3 = d3.length == 0 ? [0] : d3;
 
           tooltip
             .style("position", "absolute")
@@ -405,10 +406,10 @@ export class StatisticComponent implements OnInit {
           let d2 = data[1].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
           let d3 = data[2].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
           let d4 = data[3].find((e: cData) => new Date(e.date).getTime() == new Date(date).getTime()) ?? [];
-          d1 = d1 == [] ? [0] : d1;
-          d2 = d2 == [] ? [0] : d2;
-          d3 = d3 == [] ? [0] : d3;
-          d4 = d4 == [] ? [0] : d4;
+          d1 = d1.length == 0 ? [0] : d1;
+          d2 = d2.length == 0 ? [0] : d2;
+          d3 = d3.length == 0 ? [0] : d3;
+          d4 = d4.length == 0 ? [0] : d4;
           tooltip
             .style("position", "absolute")
             .style('visibility', 'visible')

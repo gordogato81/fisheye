@@ -1,4 +1,3 @@
-
 <mat-card id="legendECard">
   <svg id="legend"></svg>
 </mat-card>
@@ -60,20 +59,24 @@
       <mat-option value="log">Logarithmic Scaling</mat-option>
     </mat-select>
   </mat-form-field>
-  <mat-checkbox class="worldChecked" [(ngModel)]="faoChecked" (change)="faoChange($event)" [disabled]="faoDisabled"
+  <mat-checkbox
+    class="worldChecked"
+    [(ngModel)]="faoChecked"
+    (change)="faoChange($event)"
+    [disabled]="faoDisabled"
     >Display FAO Fishing Boundaries</mat-checkbox
   >
 </mat-card>
 <mat-slider
   id="slider"
-  thumbLabel
-  (change)="onInputChange($event)"
+  
   [displayWith]="sliderDisplay"
   [min]="1"
   [max]="sliderMax"
   step="1"
-  [value]="sliderVal"
-></mat-slider>
+  
+  ><input matSliderThumb [value]="sliderVal" (change)="onInputChange($event)" title="date slider"
+/></mat-slider>
 <!-- <ngx-slider [options]="options" formControlName="sliderControl"></ngx-slider> -->
 <mat-progress-bar
   color="accent"

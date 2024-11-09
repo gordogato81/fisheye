@@ -3,10 +3,16 @@ from flask_cors import CORS
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import os
 
 app = Flask(__name__)
 CORS(app)
 
+HOST = os.environ['DB_HOST']
+DB = os.environ['POSTGRES_DB']
+DB_USER = os.environ['POSTGRES_USER']
+DB_PASS = os.environ['POSTGRES_PASSWORD']
+PORT = os.environ['DB_PORT']
 
 @app.route("/")
 def home():
@@ -15,8 +21,7 @@ def home():
 
 @app.route('/getQuadValues', methods=["GET", "POST"])
 def getQuadValues():
-    connection = psycopg2.connect(
-        host="charon04.inf.uni-konstanz.de", port=5432, dbname="fishingdb", user="wittekindt", password="HLFiqcjkJLOfcfOysnLR")
+    connection = psycopg2.connect(host=HOST, port=PORT, dbname=DB, user=DB_USER, password=DB_PASS)
 
     b1 = [0, 1]
     b2 = [0, 2]
@@ -100,8 +105,7 @@ def getQuadValues():
 
 @app.route('/getLcV', methods=["GET", "POST"])
 def getLcV():
-    connection = psycopg2.connect(
-        host="charon04.inf.uni-konstanz.de", port=5432, dbname="fishingdb", user="wittekindt", password="HLFiqcjkJLOfcfOysnLR")
+    connection = psycopg2.connect(host=HOST, port=PORT, dbname=DB, user=DB_USER, password=DB_PASS)
 
     b1 = [0, 1]
     b2 = [0, 2]
@@ -210,8 +214,7 @@ def getLcV():
 
 @app.route('/getChartData', methods=['GET', 'POST'])
 def getChartData():
-    connection = psycopg2.connect(host="charon04.inf.uni-konstanz.de", port=5432,
-                                  dbname="fishingdb", user="wittekindt", password="HLFiqcjkJLOfcfOysnLR")
+    connection = psycopg2.connect(host=HOST, port=PORT, dbname=DB, user=DB_USER, password=DB_PASS)
 
     b1 = [0, 1]
     b2 = [0, 2]

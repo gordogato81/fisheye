@@ -4,10 +4,8 @@ import { APIService } from '../service/api.service';
 import * as L from 'leaflet';
 import * as d3 from 'd3';
 
-import { MatLegacySliderChange as MatSliderChange } from '@angular/material/legacy-slider';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ExplorationService } from '../service/exploration.service';
-import { Options } from '@angular-slider/ngx-slider';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -40,14 +38,18 @@ export class ExplorationComponent implements OnInit {
   private intervalLength: number = 5;
   private min_color = 'orange';
   private max_color = 'purple';
-  private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=json';
+  // private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=json';
+  private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=fifao%3AFAO_AREAS_ERASE_LOWRES&maxFeatures=50&outputFormat=application%2Fjson';
 
+    // minDate: Date = new Date('2012-01-01');
+  minDate: Date = new Date('2017-01-01');
+  maxDate: Date = new Date('2020-12-31');
   sliderDisplay: any = (element: number) => { return this.dateToStr(this.valToDate(element)) }; // Displays the date as a string on the slider thumb
-  sliderMax: number = 3288; // the total number of dats in the dataset 
+  sliderMax: number = (this.maxDate.getTime() - this.minDate.getTime()) / (1000 * 60 * 60 * 24) + 1; // the total number of dats in the dataset 
   sliderVal: number = 1;
   mapScale: string = 'log';
-  minDate: Date = new Date('2012-01-01');
-  maxDate: Date = new Date('2020-12-31');
+
+
   range = new UntypedFormGroup({
     start: new UntypedFormControl(),
     end: new UntypedFormControl(),
@@ -196,7 +198,7 @@ export class ExplorationComponent implements OnInit {
       this.r_data = data;
       this.es.setData(this.r_data);
       this.loaded = true;
-      console.log(this.r_data);
+      // console.log(this.r_data);
       this.render = new renderQueue(draw).clear(clearContext);
       this.es.setRenderer(this.render);
       this.dMax = d3.max(this.r_data, (d: any) => +d.tfh) ?? 0;
@@ -310,9 +312,8 @@ export class ExplorationComponent implements OnInit {
     }
   }
 
-  onInputChange(event: MatSliderChange) {
-    const that = this;
-    this.sliderVal = event.value ?? 0;
+  onInputChange(event: any) {
+    this.sliderVal = event.target.value ?? 0;
     const start = this.valToDate(this.sliderVal);
     const end = this.intervalToEndDate(start);
     this.range.setValue({ start: start, end: end });

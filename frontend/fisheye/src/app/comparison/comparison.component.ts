@@ -39,10 +39,13 @@ export class ComparisonComponent implements OnInit {
   private legend: any;
   private min_color = 'orange';
   private max_color = 'purple';
-  private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=json';
+  // private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_CWP&outputFormat=application%2Fjson';
+  private faoURL = 'https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=fifao%3AFAO_AREAS_ERASE_LOWRES&maxFeatures=50&outputFormat=application%2Fjson';
+  
   subs: Subscription = new Subscription();
   mapsScale: string = 'log'
-  minDate: Date = new Date('2012-01-01');
+  // minDate: Date = new Date('2012-01-01');
+  minDate: Date = new Date('2017-01-01');
   maxDate: Date = new Date('2020-12-31');
   faoChecked = false;
   faoDisabled = true;

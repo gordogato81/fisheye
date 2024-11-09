@@ -1,6 +1,5 @@
 version: '3'
 services: 
-
   database:
     container_name: fish-database
     build: ./database
@@ -9,7 +8,8 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - fish-network
+      - fish
+    env_file: ./secrets/.env
 
   fisheye-backend:
     container_name: fisheye-backend
@@ -19,20 +19,21 @@ services:
     volumes:
       - ./backend/code:/var/opt/fisheye
     networks:
-      - fish-network
+      - fish
+    env_file: ./secrets/.env
     
-  frontend:
-    container_name: fisheye-frontend
-    build: ./frontend
-    ports:
-      - "8889:80"
-    volumes:
-      - ./logs:/var/log/nginx
-    networks:
-      - fish-network
+  # frontend:
+  #   container_name: fisheye-frontend
+  #   build: ./frontend
+  #   ports:
+  #     - "8889:80"
+  #   volumes:
+  #     - ./logs:/var/log/nginx
+  #   networks:
+  #     - fish
 
 volumes:
   database-data:
 
 networks:
-  fish-network:
+  fish:
