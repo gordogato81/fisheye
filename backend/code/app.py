@@ -14,10 +14,6 @@ DB_USER = os.environ['POSTGRES_USER']
 DB_PASS = os.environ['POSTGRES_PASSWORD']
 PORT = os.environ['DB_PORT']
 
-@app.route("/")
-def home():
-    return "Hello, Flask!"
-
 
 @app.route('/getQuadValues', methods=["GET", "POST"])
 def getQuadValues():
@@ -379,7 +375,9 @@ def getChartData():
     # {"points": pixels}
     return jsonify(pixels), 200
 
-
+if __name__ == "__main__":
+    # app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
+    app.run()
 # @app.route('/getDV', methods=["GET", "POST"])
 # def getDV():
 #     connection = psycopg2.connect(

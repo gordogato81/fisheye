@@ -1,3 +1,5 @@
 /secrets/
 /database/raw_data/
 /database/FishDB.sql
+/frontend/fisheye/node_modules/
+/frontend/fisheye/dist/

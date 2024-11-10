@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { cData, tmp } from '../interfaces';
 
-import midData from '../../assets/json/midNew.json'
+import midData from '../../assets/json/midNew.json';
 
 @Injectable({
   providedIn: 'root',
@@ -11,9 +11,15 @@ import midData from '../../assets/json/midNew.json'
 export class APIService {
   geoJson: any;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
+  // private url = 'http://localhost:5000'; // development
+  private url = 'https://fisheye.wittekindt.eu/api'; // production
 
-  public getDateRangeVal(start?: string, stop?: string, country?: string): Observable<tmp[]> {
+  public getDateRangeVal(
+    start?: string,
+    stop?: string,
+    country?: string
+  ): Observable<tmp[]> {
     if (start != undefined || stop != undefined) {
       country = country ?? 'World';
       let mids = this.getMid(country);
@@ -24,31 +30,105 @@ export class APIService {
       if (!(groups.batch3.length == 0)) batchNum += 1;
       if (country == 'World') batchNum = 0;
       if (batchNum == 0) {
-        return this.http.get<tmp[]>('http://localhost:5000/getQuadValues?start=' + start + '&end=' + stop);
+        return this.http.get<tmp[]>(
+          this.url + '/getQuadValues?start=' + start + '&end=' + stop
+        );
       } else if (batchNum == 1) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        return this.http.get<tmp[]>('http://localhost:5000/getQuadValues?start='
-          + start + '&end=' + stop + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        return this.http.get<tmp[]>(
+          this.url +
+            '/getQuadValues?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1]
+        );
       } else if (batchNum == 2) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        let b2 = this.trueRange(<number[]>[groups.batch2[0], groups.batch2.slice(-1).pop()]);
-        return this.http.get<tmp[]>('http://localhost:5000/getQuadValues?start='
-          + start + '&end=' + stop + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]
-          + "&b2[0]=" + b2[0] + "&b2[1]=" + b2[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        let b2 = this.trueRange(<number[]>[
+          groups.batch2[0],
+          groups.batch2.slice(-1).pop(),
+        ]);
+        return this.http.get<tmp[]>(
+          this.url +
+            '/getQuadValues?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1] +
+            '&b2[0]=' +
+            b2[0] +
+            '&b2[1]=' +
+            b2[1]
+        );
       } else if (batchNum == 3) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        let b2 = this.trueRange(<number[]>[groups.batch2[0], groups.batch2.slice(-1).pop()]);
-        let b3 = this.trueRange(<number[]>[groups.batch3[0], groups.batch3.slice(-1).pop()]);
-        return this.http.get<tmp[]>('http://localhost:5000/getQuadValues?start='
-          + start + '&end=' + stop + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]
-          + "&b2[0]=" + b2[0] + "&b2[1]=" + b2[1] + "&b3[0]=" + b3[0] + "&b3[1]=" + b3[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        let b2 = this.trueRange(<number[]>[
+          groups.batch2[0],
+          groups.batch2.slice(-1).pop(),
+        ]);
+        let b3 = this.trueRange(<number[]>[
+          groups.batch3[0],
+          groups.batch3.slice(-1).pop(),
+        ]);
+        return this.http.get<tmp[]>(
+          this.url +
+            '/getQuadValues?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1] +
+            '&b2[0]=' +
+            b2[0] +
+            '&b2[1]=' +
+            b2[1] +
+            '&b3[0]=' +
+            b3[0] +
+            '&b3[1]=' +
+            b3[1]
+        );
       }
     }
-    return this.http.get<tmp[]>('http://localhost:5000/getQuadValues');
+    return this.http.get<tmp[]>(this.url + '/getQuadValues');
   }
 
-  public getLcV(start?: string, stop?: string, bl?: [number, number], tr?: [number, number], country?: string): Observable<tmp[]> {
-    if (start != undefined && stop != undefined && bl != undefined && tr != undefined) {
+  public getLcV(
+    start?: string,
+    stop?: string,
+    bl?: [number, number],
+    tr?: [number, number],
+    country?: string
+  ): Observable<tmp[]> {
+    if (
+      start != undefined &&
+      stop != undefined &&
+      bl != undefined &&
+      tr != undefined
+    ) {
       country = country ?? 'World';
       let mids = this.getMid(country);
       let groups = this.getGroups(mids);
@@ -58,40 +138,157 @@ export class APIService {
       if (!(groups.batch3.length == 0)) batchNum += 1;
       if (country == 'World') batchNum = 0;
       if (batchNum == 0) {
-        return this.http.get<tmp[]>('http://localhost:5000/getLcV?start='
-          + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-          + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1]);
+        return this.http.get<tmp[]>(
+          this.url +
+            '/getLcV?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&bl[0]=' +
+            bl[0] +
+            '&bl[1]=' +
+            bl[1] +
+            '&tr[0]=' +
+            tr[0] +
+            '&tr[1]=' +
+            tr[1]
+        );
       } else if (batchNum == 1) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        return this.http.get<tmp[]>('http://localhost:5000/getLcV?start='
-          + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-          + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1] + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        return this.http.get<tmp[]>(
+          this.url +
+            '/getLcV?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&bl[0]=' +
+            bl[0] +
+            '&bl[1]=' +
+            bl[1] +
+            '&tr[0]=' +
+            tr[0] +
+            '&tr[1]=' +
+            tr[1] +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1]
+        );
       } else if (batchNum == 2) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        let b2 = this.trueRange(<number[]>[groups.batch2[0], groups.batch2.slice(-1).pop()]);
-        return this.http.get<tmp[]>('http://localhost:5000/getLcV?start='
-          + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-          + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1] + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]
-          + "&b2[0]=" + b2[0] + "&b2[1]=" + b2[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        let b2 = this.trueRange(<number[]>[
+          groups.batch2[0],
+          groups.batch2.slice(-1).pop(),
+        ]);
+        return this.http.get<tmp[]>(
+          this.url +
+            '/getLcV?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&bl[0]=' +
+            bl[0] +
+            '&bl[1]=' +
+            bl[1] +
+            '&tr[0]=' +
+            tr[0] +
+            '&tr[1]=' +
+            tr[1] +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1] +
+            '&b2[0]=' +
+            b2[0] +
+            '&b2[1]=' +
+            b2[1]
+        );
       } else if (batchNum == 3) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        let b2 = this.trueRange(<number[]>[groups.batch2[0], groups.batch2.slice(-1).pop()]);
-        let b3 = this.trueRange(<number[]>[groups.batch3[0], groups.batch3.slice(-1).pop()]);
-        return this.http.get<tmp[]>('http://localhost:5000/getLcV?start='
-          + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-          + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1] + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]
-          + "&b2[0]=" + b2[0] + "&b2[1]=" + b2[1] + "&b3[0]=" + b3[0] + "&b3[1]=" + b3[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        let b2 = this.trueRange(<number[]>[
+          groups.batch2[0],
+          groups.batch2.slice(-1).pop(),
+        ]);
+        let b3 = this.trueRange(<number[]>[
+          groups.batch3[0],
+          groups.batch3.slice(-1).pop(),
+        ]);
+        return this.http.get<tmp[]>(
+          this.url +
+            '/getLcV?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&bl[0]=' +
+            bl[0] +
+            '&bl[1]=' +
+            bl[1] +
+            '&tr[0]=' +
+            tr[0] +
+            '&tr[1]=' +
+            tr[1] +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1] +
+            '&b2[0]=' +
+            b2[0] +
+            '&b2[1]=' +
+            b2[1] +
+            '&b3[0]=' +
+            b3[0] +
+            '&b3[1]=' +
+            b3[1]
+        );
       }
 
-      return this.http.get<tmp[]>('http://localhost:5000/getLcV?start='
-        + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-        + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1]);
+      return this.http.get<tmp[]>(
+        this.url +
+          '/getLcV?start=' +
+          start +
+          '&end=' +
+          stop +
+          '&bl[0]=' +
+          bl[0] +
+          '&bl[1]=' +
+          bl[1] +
+          '&tr[0]=' +
+          tr[0] +
+          '&tr[1]=' +
+          tr[1]
+      );
     }
-    return this.http.get<tmp[]>('http://localhost:5000/getLcV');
+    return this.http.get<tmp[]>(this.url + '/getLcV');
   }
 
-  public getChartData(start?: string, stop?: string, country?: string, bl?: [number, number], tr?: [number, number]): Observable<cData[]> {
-    if (start != undefined && stop != undefined && bl != undefined && tr != undefined) {
+  public getChartData(
+    start?: string,
+    stop?: string,
+    country?: string,
+    bl?: [number, number],
+    tr?: [number, number]
+  ): Observable<cData[]> {
+    if (
+      start != undefined &&
+      stop != undefined &&
+      bl != undefined &&
+      tr != undefined
+    ) {
       country = country ?? 'World';
       // console.log('api: ', country)
       let mids = this.getMid(country);
@@ -103,34 +300,140 @@ export class APIService {
       if (!(groups.batch3.length == 0)) batchNum += 1;
       if (country == 'World') batchNum = 0;
       if (batchNum == 0) {
-        return this.http.get<cData[]>('http://localhost:5000/getChartData?start='
-          + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-          + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1]);
+        return this.http.get<cData[]>(
+          this.url +
+            '/getChartData?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&bl[0]=' +
+            bl[0] +
+            '&bl[1]=' +
+            bl[1] +
+            '&tr[0]=' +
+            tr[0] +
+            '&tr[1]=' +
+            tr[1]
+        );
       } else if (batchNum == 1) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        return this.http.get<cData[]>('http://localhost:5000/getChartData?start='
-          + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-          + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1] + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        return this.http.get<cData[]>(
+          this.url +
+            '/getChartData?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&bl[0]=' +
+            bl[0] +
+            '&bl[1]=' +
+            bl[1] +
+            '&tr[0]=' +
+            tr[0] +
+            '&tr[1]=' +
+            tr[1] +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1]
+        );
       } else if (batchNum == 2) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        let b2 = this.trueRange(<number[]>[groups.batch2[0], groups.batch2.slice(-1).pop()]);
-        return this.http.get<cData[]>('http://localhost:5000/getChartData?start='
-          + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-          + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1] + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]
-          + "&b2[0]=" + b2[0] + "&b2[1]=" + b2[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        let b2 = this.trueRange(<number[]>[
+          groups.batch2[0],
+          groups.batch2.slice(-1).pop(),
+        ]);
+        return this.http.get<cData[]>(
+          this.url +
+            '/getChartData?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&bl[0]=' +
+            bl[0] +
+            '&bl[1]=' +
+            bl[1] +
+            '&tr[0]=' +
+            tr[0] +
+            '&tr[1]=' +
+            tr[1] +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1] +
+            '&b2[0]=' +
+            b2[0] +
+            '&b2[1]=' +
+            b2[1]
+        );
       } else if (batchNum == 3) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        let b2 = this.trueRange(<number[]>[groups.batch2[0], groups.batch2.slice(-1).pop()]);
-        let b3 = this.trueRange(<number[]>[groups.batch3[0], groups.batch3.slice(-1).pop()]);
-        return this.http.get<cData[]>('http://localhost:5000/getChartData?start='
-          + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-          + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1] + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]
-          + "&b2[0]=" + b2[0] + "&b2[1]=" + b2[1] + "&b3[0]=" + b3[0] + "&b3[1]=" + b3[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        let b2 = this.trueRange(<number[]>[
+          groups.batch2[0],
+          groups.batch2.slice(-1).pop(),
+        ]);
+        let b3 = this.trueRange(<number[]>[
+          groups.batch3[0],
+          groups.batch3.slice(-1).pop(),
+        ]);
+        return this.http.get<cData[]>(
+          this.url +
+            '/getChartData?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&bl[0]=' +
+            bl[0] +
+            '&bl[1]=' +
+            bl[1] +
+            '&tr[0]=' +
+            tr[0] +
+            '&tr[1]=' +
+            tr[1] +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1] +
+            '&b2[0]=' +
+            b2[0] +
+            '&b2[1]=' +
+            b2[1] +
+            '&b3[0]=' +
+            b3[0] +
+            '&b3[1]=' +
+            b3[1]
+        );
       }
 
-      return this.http.get<cData[]>('http://localhost:5000/getChartData?start='
-        + start + '&end=' + stop + '&bl[0]=' + bl[0] + '&bl[1]=' + bl[1]
-        + '&tr[0]=' + tr[0] + '&tr[1]=' + tr[1]);
+      return this.http.get<cData[]>(
+        this.url +
+          '/getChartData?start=' +
+          start +
+          '&end=' +
+          stop +
+          '&bl[0]=' +
+          bl[0] +
+          '&bl[1]=' +
+          bl[1] +
+          '&tr[0]=' +
+          tr[0] +
+          '&tr[1]=' +
+          tr[1]
+      );
     } else if (start != undefined || stop != undefined) {
       country = country ?? 'World';
       let mids = this.getMid(country);
@@ -141,45 +444,108 @@ export class APIService {
       if (!(groups.batch3.length == 0)) batchNum += 1;
       if (country == 'World') batchNum = 0;
       if (batchNum == 0) {
-        return this.http.get<cData[]>('http://localhost:5000/getChartData?start=' + start + '&end=' + stop);
+        return this.http.get<cData[]>(
+          this.url + '/getChartData?start=' + start + '&end=' + stop
+        );
       } else if (batchNum == 1) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        return this.http.get<cData[]>('http://localhost:5000/getChartData?start='
-          + start + '&end=' + stop + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        return this.http.get<cData[]>(
+          this.url +
+            '/getChartData?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1]
+        );
       } else if (batchNum == 2) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        let b2 = this.trueRange(<number[]>[groups.batch2[0], groups.batch2.slice(-1).pop()]);
-        return this.http.get<cData[]>('http://localhost:5000/getChartData?start='
-          + start + '&end=' + stop + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]
-          + "&b2[0]=" + b2[0] + "&b2[1]=" + b2[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        let b2 = this.trueRange(<number[]>[
+          groups.batch2[0],
+          groups.batch2.slice(-1).pop(),
+        ]);
+        return this.http.get<cData[]>(
+          this.url +
+            '/getChartData?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1] +
+            '&b2[0]=' +
+            b2[0] +
+            '&b2[1]=' +
+            b2[1]
+        );
       } else if (batchNum == 3) {
-        let b1 = this.trueRange(<number[]>[groups.batch1[0], groups.batch1.slice(-1).pop()]);
-        let b2 = this.trueRange(<number[]>[groups.batch2[0], groups.batch2.slice(-1).pop()]);
-        let b3 = this.trueRange(<number[]>[groups.batch3[0], groups.batch3.slice(-1).pop()]);
-        return this.http.get<cData[]>('http://localhost:5000/getChartData?start='
-          + start + '&end=' + stop + "&batch=" + batchNum + "&b1[0]=" + b1[0] + "&b1[1]=" + b1[1]
-          + "&b2[0]=" + b2[0] + "&b2[1]=" + b2[1] + "&b3[0]=" + b3[0] + "&b3[1]=" + b3[1]);
+        let b1 = this.trueRange(<number[]>[
+          groups.batch1[0],
+          groups.batch1.slice(-1).pop(),
+        ]);
+        let b2 = this.trueRange(<number[]>[
+          groups.batch2[0],
+          groups.batch2.slice(-1).pop(),
+        ]);
+        let b3 = this.trueRange(<number[]>[
+          groups.batch3[0],
+          groups.batch3.slice(-1).pop(),
+        ]);
+        return this.http.get<cData[]>(
+          this.url +
+            '/getChartData?start=' +
+            start +
+            '&end=' +
+            stop +
+            '&batch=' +
+            batchNum +
+            '&b1[0]=' +
+            b1[0] +
+            '&b1[1]=' +
+            b1[1] +
+            '&b2[0]=' +
+            b2[0] +
+            '&b2[1]=' +
+            b2[1] +
+            '&b3[0]=' +
+            b3[0] +
+            '&b3[1]=' +
+            b3[1]
+        );
       }
     }
-    return this.http.get<cData[]>('http://localhost:5000/getChartData');
+    return this.http.get<cData[]>(this.url + '/getChartData');
   }
 
   private getMid(country: string) {
     let mids: number[] = [];
-    let midList = midData.filter(element => element.viewValue == country);
+    let midList = midData.filter((element) => element.viewValue == country);
 
-    midList.forEach(elem => {
+    midList.forEach((elem) => {
       mids.push(parseInt(elem.value));
     });
-    return mids
+    return mids;
   }
 
   private getGroups(mid: number[]) {
     let batch = {
       batch1: <number[]>[],
       batch2: <number[]>[],
-      batch3: <number[]>[]
-    }
+      batch3: <number[]>[],
+    };
     let bC = 1;
     if (mid.length == 1) {
       batch.batch1.push(mid[0]);
