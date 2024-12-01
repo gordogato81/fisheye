@@ -1,12 +1,15 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask_cors import cross_origin, CORS 
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 
 app = Flask(__name__)
-CORS(app)
+cors_origins = ['http://localhost', 'http://localhost:80',
+                'http://localhost:4200', 'http://localhost:5001']
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 HOST = os.environ['DB_HOST']
 DB = os.environ['POSTGRES_DB']
@@ -16,6 +19,7 @@ PORT = os.environ['DB_PORT']
 
 
 @app.route('/getQuadValues', methods=["GET", "POST"])
+@cross_origin(origins=cors_origins)
 def getQuadValues():
     connection = psycopg2.connect(host=HOST, port=PORT, dbname=DB, user=DB_USER, password=DB_PASS)
 
@@ -100,6 +104,7 @@ def getQuadValues():
 
 
 @app.route('/getLcV', methods=["GET", "POST"])
+@cross_origin(origins=cors_origins)
 def getLcV():
     connection = psycopg2.connect(host=HOST, port=PORT, dbname=DB, user=DB_USER, password=DB_PASS)
 
@@ -209,6 +214,7 @@ def getLcV():
 
 
 @app.route('/getChartData', methods=['GET', 'POST'])
+@cross_origin(origins=cors_origins)
 def getChartData():
     connection = psycopg2.connect(host=HOST, port=PORT, dbname=DB, user=DB_USER, password=DB_PASS)
 
