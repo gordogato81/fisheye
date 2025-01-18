@@ -14,7 +14,7 @@ services:
 
   backend:
     container_name: fisheye-backend
-    build: 
+    build:
       context: ./backend/
       dockerfile: Dockerfile.prod
     restart: unless-stopped
@@ -29,7 +29,7 @@ services:
 
   frontend:
     container_name: fisheye-frontend
-    build: 
+    build:
       context: ./frontend/
       dockerfile: Dockerfile
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
       - ./logs:/var/log/nginx
     networks:
       - fish
-      
+
 name: fisheye
 networks:
   fish:
