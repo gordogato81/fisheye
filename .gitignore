@@ -3,3 +3,6 @@
 /database/FishDB.sql
 /frontend/fisheye/node_modules/
 /frontend/fisheye/dist/
+/backend/main.log
+/logs/access.log
+/logs/error.log
