@@ -43,7 +43,9 @@ export class StatisticComponent implements OnInit {
   ngOnInit(): void {
     this.filteredOptions = this.countryControl.valueChanges.pipe(
       startWith(''),
-      map(value => (typeof value === 'string' ? value : value.name)),
+      map((value: string | Country | null | undefined) =>
+        typeof value === 'string' ? value : value?.viewValue ?? ''
+      ),
       map(name => (name ? this._filter(name) : this.options.slice())),
     );
     this.mCountries.disable();
@@ -118,7 +120,7 @@ export class StatisticComponent implements OnInit {
     this.showProgress();
 
     // gets data from the api service and generates chart on completion
-    this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country, bl, tr).subscribe(data => {
+    this.ds.getChartData(this.dateToStr(start), this.dateToStr(end), country, bl, tr).subscribe((data: cData[]) => {
       this.hideProgress();
       // console.log(data);
 
