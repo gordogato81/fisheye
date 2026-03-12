@@ -1,8 +1,15 @@
 /secrets/
 /database/raw_data/
 /database/FishDB.sql
+/database/FishDB.old.sql
 /frontend/fisheye/node_modules/
 /frontend/fisheye/dist/
+<<<<<<< Updated upstream
 /backend/main.log
 /logs/access.log
 /logs/error.log
+=======
+/backend/code/__pycache__/
+/backend/main.log
+/logs/
+>>>>>>> Stashed changes

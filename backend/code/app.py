@@ -38,7 +38,7 @@ def getQuadValues():
     b2[1] = request.args.get("b2[1]", 0, type=int)
     b3[0] = request.args.get("b3[0]", 0, type=int)
     b3[1] = request.args.get("b3[1]", 0, type=int)
-    
+
     query = """
     select cell_ll_lat as lat, cell_ll_lon as lon, sum(fishing_hours) as tfh
     from "FishingHours"
@@ -145,9 +145,9 @@ def getLcV():
     from "FishingHours"
     where
     cell_ll_lat between {bl_lat} and {tr_lat}
-    and 
+    and
     cell_ll_lon between {bl_lon} and {tr_lon}
-    and 
+    and
     "date" between {start_date}::date AND {end_date}::date
     """
     if (batchNum == 0):
@@ -163,9 +163,9 @@ def getLcV():
             end_date=Literal(end)
         )
     elif (batchNum == 1):
-        query = """
+        query += """
         AND
-        mmsi between {b10} AND {b11}  
+        mmsi between {b10} AND {b11}
         group by cell_ll_lat, cell_ll_lon
         """
         query = SQL(query).format(
@@ -179,9 +179,9 @@ def getLcV():
             b11=Literal(b1[1])
         )
     elif (batchNum == 2):
-        query = """
+        query += """
         AND
-        (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21})  
+        (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21})
         group by cell_ll_lat, cell_ll_lon
         """
         query = SQL(query).format(
@@ -197,9 +197,9 @@ def getLcV():
             b21=Literal(b2[1])
         )
     elif (batchNum == 3):
-        query = """
+        query += """
         AND
-        (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21} OR mmsi between {b30} AND {b31})  
+        (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21} OR mmsi between {b30} AND {b31})
         group by cell_ll_lat, cell_ll_lon
         """
         query = SQL(query).format(
@@ -277,7 +277,7 @@ def getChartData():
         elif (batchNum == 1):
             query += """
             AND
-            mmsi between {b10} AND {b11}  
+            mmsi between {b10} AND {b11}
             group by date
             order by date
             """
@@ -290,7 +290,7 @@ def getChartData():
         elif (batchNum == 2):
             query += """
             AND
-            (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21})  
+            (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21})
             group by date
             order by date
             """
@@ -305,7 +305,7 @@ def getChartData():
         elif (batchNum == 3):
             query += """
             AND
-            (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21} OR mmsi between {b30} AND {b31})  
+            (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21} OR mmsi between {b30} AND {b31})
             group by date
             order by date
             """
@@ -380,7 +380,7 @@ def getChartData():
         elif (batchNum == 3):
             query += """
             AND
-            (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21} OR mmsi between {b30} AND {b31})  
+            (mmsi between {b10} AND {b11} OR mmsi between {b20} AND {b21} OR mmsi between {b30} AND {b31})
             group by date
             order by date
             """
