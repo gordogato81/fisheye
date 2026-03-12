@@ -14,9 +14,10 @@ import { tmp, Country, geo } from '../interfaces';
 declare var renderQueue: any;
 
 @Component({
-  selector: 'app-exploration',
-  templateUrl: './exploration.component.html',
-  styleUrls: ['./exploration.component.sass'],
+    selector: 'app-exploration',
+    templateUrl: './exploration.component.html',
+    styleUrls: ['./exploration.component.sass'],
+    standalone: false
 })
 export class ExplorationComponent implements OnInit {
   constructor(private ds: APIService, public es: ExplorationService) {

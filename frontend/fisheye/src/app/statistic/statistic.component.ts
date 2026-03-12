@@ -10,9 +10,10 @@ import { Country, cData, bin } from '../interfaces';
 import { StatisticService } from '../service/statistic.service';
 import { HistogramGeneratorDate, PieArcDatum } from 'd3';
 @Component({
-  selector: 'app-statistic',
-  templateUrl: './statistic.component.html',
-  styleUrls: ['./statistic.component.sass']
+    selector: 'app-statistic',
+    templateUrl: './statistic.component.html',
+    styleUrls: ['./statistic.component.sass'],
+    standalone: false
 })
 export class StatisticComponent implements OnInit {
 

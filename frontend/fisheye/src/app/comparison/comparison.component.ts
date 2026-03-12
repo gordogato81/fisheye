@@ -13,9 +13,10 @@ import { forkJoin, map, Observable, startWith, Subscription } from 'rxjs';
 declare var renderQueue: any;
 
 @Component({
-  selector: 'app-comparison',
-  templateUrl: './comparison.component.html',
-  styleUrls: ['./comparison.component.sass']
+    selector: 'app-comparison',
+    templateUrl: './comparison.component.html',
+    styleUrls: ['./comparison.component.sass'],
+    standalone: false
 })
 export class ComparisonComponent implements OnInit {
 
