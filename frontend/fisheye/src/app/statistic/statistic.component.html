@@ -1,11 +1,11 @@
 <div class="container">
   <div class="graph-container" id="graphContainer">
     <mat-progress-bar
-        color="accent"
-        mode="indeterminate"
-        id="chartProgress"
-        class="progress"
-      ></mat-progress-bar>
+      color="accent"
+      mode="indeterminate"
+      id="chartProgress"
+      class="progress"
+    ></mat-progress-bar>
     <div id="chart"></div>
   </div>
   <div class="navigation-container">
@@ -20,7 +20,7 @@
           class="radio-group"
           [(ngModel)]="chart"
           (change)="radioChange()"
-        >
+          >
           <mat-radio-button class="radio-button" value="bar">
             Bar Chart
           </mat-radio-button>
@@ -35,102 +35,107 @@
             [min]="minDate"
             [max]="maxDate"
             [rangePicker]="picker1"
-          >
+            >
             <input
               matStartDate
               formControlName="start"
               placeholder="2020-01-01"
-            />
-            <input matEndDate formControlName="end" placeholder="2020-01-05" />
-          </mat-date-range-input>
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="picker1"
-          ></mat-datepicker-toggle>
-          <mat-date-range-picker #picker1></mat-date-range-picker>
+              />
+              <input matEndDate formControlName="end" placeholder="2020-01-05" />
+            </mat-date-range-input>
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="picker1"
+            ></mat-datepicker-toggle>
+            <mat-date-range-picker #picker1></mat-date-range-picker>
 
-          <mat-error
-            *ngIf="range1.controls['start'].hasError('matStartDateInvalid')"
-            >Invalid start date</mat-error
-          >
-          <mat-error
-            *ngIf="range1.controls['end'].hasError('matEndDateInvalid')"
-            >Invalid end date</mat-error
-          >
-        </mat-form-field>
+            @if (range1.controls['start'].hasError('matStartDateInvalid')) {
+              <mat-error
+                >Invalid start date</mat-error
+                >
+            }
+            @if (range1.controls['end'].hasError('matEndDateInvalid')) {
+              <mat-error
+                >Invalid end date</mat-error
+                >
+              }
+            </mat-form-field>
 
-        <mat-checkbox class="worldChecked" [(ngModel)]="worldChecked"
-          >Select entire world</mat-checkbox
-        >
-        <mat-divider></mat-divider>
-      </div>
+            <mat-checkbox class="worldChecked" [(ngModel)]="worldChecked"
+              >Select entire world</mat-checkbox
+              >
+              <mat-divider></mat-divider>
+            </div>
 
-      <div class="maps-container">
-        <h3>Bar Chart Settings</h3>
-        <mat-form-field appearance="fill">
-          <mat-label>Select Country</mat-label>
-          <input
-            type="text"
-            matInput
-            [formControl]="countryControl"
-            [matAutocomplete]="auto1"
-            placeholder="World"
-          />
-          <mat-autocomplete #auto1="matAutocomplete">
-            <mat-option
-              *ngFor="let option of filteredOptions | async"
-              [value]="option.viewValue"
-            >
-              {{ option.viewValue }}
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>Bar aggregation</mat-label>
-          <mat-select [disabled]="chart == 'line'" [(value)]="barAg">
-            <mat-option value="day">Days</mat-option>
-            <mat-option value="week">Weeks </mat-option>
-            <mat-option value="month">Months</mat-option>
-            <mat-option value="year">Years</mat-option>
-          </mat-select>
-        </mat-form-field>
+            <div class="maps-container">
+              <h3>Bar Chart Settings</h3>
+              <mat-form-field appearance="fill">
+                <mat-label>Select Country</mat-label>
+                <input
+                  type="text"
+                  matInput
+                  [formControl]="countryControl"
+                  [matAutocomplete]="auto1"
+                  placeholder="World"
+                  />
+                  <mat-autocomplete #auto1="matAutocomplete">
+                    @for (option of filteredOptions | async; track option) {
+                      <mat-option
+                        [value]="option.viewValue"
+                        >
+                        {{ option.viewValue }}
+                      </mat-option>
+                    }
+                  </mat-autocomplete>
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                  <mat-label>Bar aggregation</mat-label>
+                  <mat-select [disabled]="chart == 'line'" [(value)]="barAg">
+                    <mat-option value="day">Days</mat-option>
+                    <mat-option value="week">Weeks </mat-option>
+                    <mat-option value="month">Months</mat-option>
+                    <mat-option value="year">Years</mat-option>
+                  </mat-select>
+                </mat-form-field>
 
-        <mat-divider></mat-divider>
-      </div>
-      <div class="maps-container">
-        <h3>Line Chart Settings</h3>
+                <mat-divider></mat-divider>
+              </div>
+              <div class="maps-container">
+                <h3>Line Chart Settings</h3>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Countries</mat-label>
-          <mat-select
-            [formControl]="mCountries"
-            (selectionChange)="lineChange()"
-            placeholder="World"
-            multiple
-          >
-            <mat-option *ngFor="let op of options" [value]="op.viewValue"
-              >{{ op.viewValue }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>Select Scaling</mat-label>
-          <mat-select [disabled]="chart == 'bar'" [(value)]='lineScale'>
-            <mat-option value="linear">Linear Scaling</mat-option>
-            <mat-option value="sqrt">Square Root Scaling</mat-option>
-            <mat-option value="log">Logarithmic Scaling</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-divider></mat-divider>
-      </div>
-      <div class="maps-container" id="legendContainer">
-        <h3>Legend</h3>
-        <svg id="chartLegend"></svg>
-        <mat-divider></mat-divider>
-      </div>
-      <button mat-raised-button id="statUpdateButton" (click)="clickUpdate()">
-        Update Visualization
-      </button>
-    </mat-card>
-  </div>
-</div>
+                <mat-form-field appearance="fill">
+                  <mat-label>Countries</mat-label>
+                  <mat-select
+                    [formControl]="mCountries"
+                    (selectionChange)="lineChange()"
+                    placeholder="World"
+                    multiple
+                    >
+                    @for (op of options; track op) {
+                      <mat-option [value]="op.viewValue"
+                        >{{ op.viewValue }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                  <mat-label>Select Scaling</mat-label>
+                  <mat-select [disabled]="chart == 'bar'" [(value)]='lineScale'>
+                    <mat-option value="linear">Linear Scaling</mat-option>
+                    <mat-option value="sqrt">Square Root Scaling</mat-option>
+                    <mat-option value="log">Logarithmic Scaling</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-divider></mat-divider>
+              </div>
+              <div class="maps-container" id="legendContainer">
+                <h3>Legend</h3>
+                <svg id="chartLegend"></svg>
+                <mat-divider></mat-divider>
+              </div>
+              <button mat-raised-button id="statUpdateButton" (click)="clickUpdate()">
+                Update Visualization
+              </button>
+            </mat-card>
+          </div>
+        </div>
