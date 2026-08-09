@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExplorationComponent } from './exploration.component';
+import { ExplorationModule } from './exploration.module';
 
 describe('ExplorationComponent', () => {
   let component: ExplorationComponent;
@@ -8,7 +9,7 @@ describe('ExplorationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ExplorationComponent ]
+      imports: [ExplorationModule]
     })
     .compileComponents();
   });

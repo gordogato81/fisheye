@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ComparisonComponent } from './comparison.component';
+import { ComparisonModule } from './comparison.module';
 
 describe('ComparisonComponent', () => {
   let component: ComparisonComponent;
@@ -8,7 +9,7 @@ describe('ComparisonComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ComparisonComponent ]
+      imports: [ComparisonModule]
     })
     .compileComponents();
   });

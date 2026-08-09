@@ -1,4 +1,4 @@
-<nav mat-tab-nav-bar>
+<nav mat-tab-nav-bar [tabPanel]="tabPanel">
   @for (link of navLinks; track link) {
     <a mat-tab-link [routerLink]="link.route" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
       {{ link.label }}
@@ -6,4 +6,6 @@
   }
 </nav>
 <h1 class="title">FishingEye</h1>
-<router-outlet></router-outlet>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet></router-outlet>
+</mat-tab-nav-panel>
