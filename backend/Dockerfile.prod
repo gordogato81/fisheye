@@ -43,4 +43,4 @@ USER prod
 # Run gunicorn with some options
 # You can adjust the number of workers, timeout, log-level, etc. according to your needs
 # See https://docs.gunicorn.org/en/stable/settings.html for more details
-CMD ["gunicorn", "--workers=4", "--timeout=120", "--log-level=info", "--access-logfile", "main.log", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--no-control-socket", "--workers=4", "--timeout=120", "--log-level=info", "--access-logfile", "main.log", "--bind", "0.0.0.0:5000", "app:app"]
